@@ -10,6 +10,8 @@ on:
     paths:
       - "fahrplan/**"
       - "aufbereitung/**"
+      - "analysen/*.py"
+      - "tests/**"
       - ".github/workflows/fahrplan.yml"
 
 permissions:
@@ -64,11 +66,17 @@ jobs:
             echo "Noch keine Aufbereitung vorhanden."
           fi
 
+      - name: Rechnungen prüfen (Tests)
+        run: python -m pytest -q tests
+
+      - name: Fahrplan-Analysen (Stufe 1) erstellen
+        run: python analysen/stufe1.py
+
       - name: Ergebnisse speichern
         run: |
           git config user.name "s1-monitor-bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add ergebnisse
+          git add ergebnisse analysen/ERGEBNISSE_STUFE1.md
           if git diff --cached --quiet; then
             echo "Keine neuen Ergebnisse."
           else

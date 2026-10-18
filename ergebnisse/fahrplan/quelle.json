@@ -1,0 +1,15 @@
+{
+  "dateiname": "Upload__hvv_Rohdaten_GTFS_Fpl_20261002.ZIP",
+  "sha256": "2618dc1589da32c35eb135780234880f86b9fcf0d8369f5504e2e50d7f515485",
+  "gueltig_von": "20261002",
+  "gueltig_bis": "20261212",
+  "quellenvermerk": "Datenquelle: Hamburger Verkehrsverbund GmbH (hvv), Transparenzportal Hamburg",
+  "lizenz": "Datenlizenz Deutschland – Namensnennung – Version 2.0 (https://www.govdata.de/dl-de/by-2-0)",
+  "zeilen": {
+    "s1_halte": 33148,
+    "knoten_bus": 12884,
+    "verkehrstage": 3059,
+    "tage": 72,
+    "s1_fahrten": 1513
+  }
+}

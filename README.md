@@ -5,6 +5,7 @@ Abstimmung der Busanschlüsse an ihren Knotenpunkten (Ohlsdorf, Barmbek, Berline
 transparent und nachvollziehbar auswertet.
 
 **Status:** Stufe 1 – Fahrplan-Analysen mit Open-Data-Fahrplandaten.
+**Aktuelle Ergebnisse:** [analysen/ERGEBNISSE_STUFE1.md](analysen/ERGEBNISSE_STUFE1.md)
 Die Echtzeit-Erhebung (Stufe 2) beginnt erst nach schriftlicher Zustimmung der Hochbahn
 zur Nutzung der Geofox-Schnittstelle.
 

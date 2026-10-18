@@ -1,6 +1,6 @@
 # Methodik
 
-Version 0.1 · Stand 18.10.2026
+Version 0.2 · Stand 18.10.2026
 
 Grundsatz: Rohdaten werden unverändert gespeichert. Alle Definitionen werden erst bei der
 Auswertung angewendet und können daher geändert werden, ohne Daten zu verlieren. Jede
@@ -37,9 +37,22 @@ Für alle weitergegebenen Zahlen gilt, sofern nicht anders angegeben:
 - **Geplante Umsteigezeit (F7):** Für jede planmäßige S1-Ankunft an einem Knoten die Zeit bis
   zur nächsten planmäßigen Abfahrt jeder Buslinie und Richtung an den Haltestellen dieses Knotens.
   Ein geplanter Anschluss gilt als nutzbar, wenn die Umsteigezeit mindestens 3 Minuten beträgt.
+  Guter Anschluss: höchstens 6 Minuten; schlechter Anschluss: mehr als 12 Minuten.
+- **Knoten-Haltestellen:** Bus-Haltestellen, deren Name mit „U S <Knoten>“ oder „S <Knoten>“ beginnt
+  (offizielle hvv-Benennung). Hält eine Busfahrt an mehreren davon, zählt nur der erste Halt.
+- **Geflügelte Züge:** Flughafen- und Poppenbüttel-Teil stehen als zwei Fahrten im Plan. Gleiche Richtung
+  und gleiche Zeit am Knoten werden als ein Zug gezählt.
+- **Zeitraum:** Anschluss-Analyse im Tagesverkehr 06–20 Uhr. Ankünfte in Betriebspausen des Anschlusses
+  (über 60 Minuten ohne Abfahrt) zählen nicht.
+- **Stichtage:** Je Tagestyp (Dienstag, Samstag, Sonntag) der künftige Tag mit dem häufigsten Fahrtenumfang
+  von S1 und Knoten-Bussen. So fallen Feiertage, Ferien- und Baustellenfahrpläne heraus.
+- **Zufällige Lage / Verschiebung:** Alle Abfahrten einer Buslinie werden rechnerisch um −10 bis +10 Minuten
+  verschoben. Der Mittelwert über eine 20-Minuten-Spanne entspricht der Umsteigezeit ohne jede Abstimmung.
+- **Schienenersatzverkehr** (z. B. „S1-SEV“) wird nicht als S-Bahn gezählt.
 
 ## Änderungsprotokoll
 
 | Datum | Version | Änderung |
 | --- | --- | --- |
+| 18.10.2026 | 0.2 | Fahrplan-Analysen präzisiert: Tagesverkehr, Betriebspausen, geflügelte Züge, Knoten-Haltestellen, Stichtage, Verschiebungs-Vorschau |
 | 18.10.2026 | 0.1 | Erste Fassung: Grundbegriffe, Standardansicht, Fahrplan-Analysen |
