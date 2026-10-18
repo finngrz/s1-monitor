@@ -1,0 +1,72 @@
+name: Echtzeit-Daten pflegen
+
+# Jede Nacht: die vielen kleinen Dateien des Vortags zu einer Datei je Tag zusammenfassen.
+on:
+  schedule:
+    - cron: "23 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daten-pflege
+  cancel-in-progress: false
+
+jobs:
+  pflegen:
+    if: vars.SAMMLER_AKTIV == 'ja'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Abhängigkeiten installieren
+        run: pip install -r requirements.txt
+
+      - name: Benötigte Tage bestimmen
+        id: tage
+        run: |
+          echo "vor1=$(TZ=Europe/Berlin date -d '1 day ago' +%F)" >> "$GITHUB_OUTPUT"
+          echo "vor2=$(TZ=Europe/Berlin date -d '2 days ago' +%F)" >> "$GITHUB_OUTPUT"
+          echo "vor3=$(TZ=Europe/Berlin date -d '3 days ago' +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Privates Daten-Repository holen (letzte drei Tage)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.DATEN_REPO }}
+          token: ${{ secrets.DATEN_TOKEN }}
+          path: daten
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*/${{ steps.tage.outputs.vor1 }}/
+            /*/${{ steps.tage.outputs.vor2 }}/
+            /*/${{ steps.tage.outputs.vor3 }}/
+
+      - name: Zusammenfassen
+        run: python sammler/kompaktieren.py --daten daten
+
+      - name: Speichern
+        working-directory: daten
+        run: |
+          git config user.name "s1-monitor-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nichts zu tun."
+            exit 0
+          fi
+          git commit -q -m "Tagesdateien zusammengefasst $(date -u +%F)"
+          for versuch in 1 2 3 4 5; do
+            if git pull -q --rebase && git push -q; then
+              exit 0
+            fi
+            sleep $((versuch * 10))
+          done
+          exit 1

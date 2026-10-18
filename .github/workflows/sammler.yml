@@ -1,0 +1,82 @@
+name: Echtzeit sammeln
+
+# Startet alle 20 Minuten einen Lauf von 24 Minuten. Läufe warten aufeinander (keine Überlappung),
+# dadurch entsteht eine nahezu lückenlose Erhebung, auch wenn GitHub Läufe verspätet startet.
+#
+# AUSGESCHALTET, solange die Repository-Variable SAMMLER_AKTIV nicht auf "ja" steht.
+# Erst einschalten, wenn die schriftliche Zustimmung der Hochbahn vorliegt (siehe sammler/README.md).
+on:
+  schedule:
+    - cron: "*/20 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sammler
+  cancel-in-progress: false
+
+jobs:
+  sammeln:
+    if: vars.SAMMLER_AKTIV == 'ja'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Abhängigkeiten installieren
+        run: pip install -r requirements.txt
+
+      - name: Benötigte Tage bestimmen
+        id: tage
+        run: |
+          echo "heute=$(TZ=Europe/Berlin date +%F)" >> "$GITHUB_OUTPUT"
+          echo "gestern=$(TZ=Europe/Berlin date -d yesterday +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Privates Daten-Repository holen (nur gestern und heute)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.DATEN_REPO }}
+          token: ${{ secrets.DATEN_TOKEN }}
+          path: daten
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /stationen_geprueft.json
+            /README.md
+            /*/${{ steps.tage.outputs.gestern }}/
+            /*/${{ steps.tage.outputs.heute }}/
+
+      - name: Sammeln
+        env:
+          GTI_USER: ${{ secrets.GTI_USER }}
+          GTI_PASS: ${{ secrets.GTI_PASS }}
+        run: python sammler/sammler.py --daten daten --dauer-min 24
+
+      - name: Daten speichern
+        if: always()
+        working-directory: daten
+        run: |
+          git config user.name "s1-monitor-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Keine neuen Daten."
+            exit 0
+          fi
+          git commit -q -m "Echtzeit-Daten $(date -u +%FT%TZ)"
+          for versuch in 1 2 3 4 5; do
+            if git pull -q --rebase && git push -q; then
+              echo "Gespeichert."
+              exit 0
+            fi
+            sleep $((versuch * 10))
+          done
+          echo "Speichern fehlgeschlagen."
+          exit 1

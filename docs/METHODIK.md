@@ -1,6 +1,6 @@
 # Methodik
 
-Version 0.2 · Stand 18.10.2026
+Version 0.3 · Stand 18.10.2026
 
 Grundsatz: Rohdaten werden unverändert gespeichert. Alle Definitionen werden erst bei der
 Auswertung angewendet und können daher geändert werden, ohne Daten zu verlieren. Jede
@@ -50,9 +50,20 @@ Für alle weitergegebenen Zahlen gilt, sofern nicht anders angegeben:
   verschoben. Der Mittelwert über eine 20-Minuten-Spanne entspricht der Umsteigezeit ohne jede Abstimmung.
 - **Schienenersatzverkehr** (z. B. „S1-SEV“) wird nicht als S-Bahn gezählt.
 
+## Echtzeit-Erhebung (Stufe 2)
+
+- **Quelle:** Geofox-Schnittstelle (`departureList` mit `useRealtime`, `getAnnouncements`), API-Version 63.
+- **Umfang:** alle 31 regulären S1-Stationen, alle Linien am jeweiligen Knoten, 60 Minuten Vorausschau;
+  an Wedel, Poppenbüttel und Flughafen zusätzlich Ankünfte. Störungsmeldungen alle 5 Minuten.
+- **Takt:** jede Station etwa einmal pro Minute, höchstens 0,8 Abfragen pro Sekunde, gleichmäßig verteilt.
+- **Soll-Zeit:** Bezugszeit der Antwort plus `timeOffset` (Minuten). Ist-Verspätung aus `delay` (Sekunden).
+- **Speicherung:** nur Änderungen je Fahrt und Station, mit vollständigem Rohdatensatz; jede Abfrage im
+  Protokoll. Rohdaten in einem privaten Repository, nie veröffentlicht.
+
 ## Änderungsprotokoll
 
 | Datum | Version | Änderung |
 | --- | --- | --- |
+| 18.10.2026 | 0.3 | Echtzeit-Erhebung beschrieben (Sammler gebaut, noch ausgeschaltet) |
 | 18.10.2026 | 0.2 | Fahrplan-Analysen präzisiert: Tagesverkehr, Betriebspausen, geflügelte Züge, Knoten-Haltestellen, Stichtage, Verschiebungs-Vorschau |
 | 18.10.2026 | 0.1 | Erste Fassung: Grundbegriffe, Standardansicht, Fahrplan-Analysen |
