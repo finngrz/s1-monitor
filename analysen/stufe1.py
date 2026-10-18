@@ -184,9 +184,12 @@ def naechste(abfahrten: np.ndarray, ankunft: np.ndarray, min_s: int) -> np.ndarr
     abfahrten = np.sort(abfahrten)
     idx = np.searchsorted(abfahrten, ankunft + min_s, side="left")
     ergebnis = np.full(len(ankunft), np.nan)
-    ok = (idx < len(abfahrten)) & (idx > 0)
+    ok = idx < len(abfahrten)
     luecke = np.full(len(ankunft), np.inf)
-    luecke[ok] = abfahrten[idx[ok]] - abfahrten[idx[ok] - 1]
+    mit_vorgaenger = ok & (idx > 0)
+    luecke[mit_vorgaenger] = abfahrten[idx[mit_vorgaenger]] - abfahrten[idx[mit_vorgaenger] - 1]
+    erste_abfahrt = ok & (idx == 0)  # vor der ersten Abfahrt des Tages: Lücke = Wartezeit selbst
+    luecke[erste_abfahrt] = abfahrten[0] - ankunft[erste_abfahrt]
     ok &= luecke <= MAX_LUECKE_S
     ergebnis[ok] = abfahrten[idx[ok]] - ankunft[ok]
     return ergebnis

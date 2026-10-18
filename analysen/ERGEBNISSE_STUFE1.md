@@ -49,8 +49,8 @@ Grundlage für die spätere Puffer-Analyse (Stufe 3): Wo der Plan mehr Zeit vors
 Für jede S1-Ankunft aus der Innenstadt in Ohlsdorf zwischen 06 und 20 Uhr: Wie lange dauert es bis zur nächsten Abfahrt des 179ers Richtung Poppenbüttel, wenn man mindestens 3 Minuten zum Umsteigen braucht?
 
 - Die S1 kommt etwa alle 10 Minuten an, der 179er fährt etwa alle 20 Minuten.
-- Mittlere Umsteigezeit heute: **10,3 Minuten**; guter Anschluss (≤ 6 Minuten) bei **35 %** der Ankünfte, mehr als 12 Minuten bei 50 %.
-- Zum Vergleich: Läge der 179er rein zufällig zur S1, betrüge die mittlere Umsteigezeit etwa 12,7 Minuten. Die heutige Lage ist also **besser als Zufall**.
+- Mittlere Umsteigezeit heute: **10,2 Minuten**; guter Anschluss (≤ 6 Minuten) bei **35 %** der Ankünfte, mehr als 12 Minuten bei 50 %.
+- Zum Vergleich: Läge der 179er rein zufällig zur S1, betrüge die mittlere Umsteigezeit etwa 12,6 Minuten. Die heutige Lage ist also **besser als Zufall**.
 - Die beste Verschiebung (+9 Minuten) brächte nur 1,0 Minuten weniger im Schnitt (9,2 Minuten, guter Anschluss bei 35 %).
 
 **Wichtig:** Weil der Bus nur halb so oft fährt wie die S1, kann eine Verschiebung höchstens jeden zweiten Zug gut anbinden. Die übrigen Ankünfte warten zwangsläufig lange. Eine spürbare Verbesserung für alle bringt nur ein dichterer Takt. Das ist eine Frage an den hvv, der laut Hochbahn den Takt festlegt.
@@ -71,7 +71,7 @@ Insgesamt liegen 44 % dieser Verbindungen besser als bei zufälliger Lage.
 | Barmbek | 277 | U S Barmbek | Richtung Innenstadt/Wedel | 20 min | 12,8 min | 10,0 min | 7,7 min (-8 min) | 5,1 min |
 | Barmbek | 18 | Hauptbahnhof/ZOB | Richtung Innenstadt/Wedel | 10 min | 9,8 min | 7,5 min | 4,8 min (-8 min) | 5,1 min |
 | Barmbek | 18 | Hauptbahnhof/ZOB | Richtung Poppenbüttel/Flughafen | 10 min | 9,2 min | 7,5 min | 4,2 min (-5 min) | 5,0 min |
-| Ohlsdorf | 179 | S Poppenbüttel (Wentzelplatz) | Richtung Innenstadt/Wedel | 20 min | 15,1 min | 12,7 min | 10,2 min (-6 min) | 4,8 min |
+| Ohlsdorf | 179 | S Poppenbüttel (Wentzelplatz) | Richtung Innenstadt/Wedel | 20 min | 15,1 min | 12,7 min | 10,2 min (+4 min) | 4,9 min |
 | Barmbek | 171 | Thomas-Mann-Straße | Richtung Innenstadt/Wedel | 20 min | 15,1 min | 12,6 min | 10,4 min (-8 min) | 4,8 min |
 | Ohlsdorf | 179 | U Borgweg | Richtung Poppenbüttel/Flughafen | 20 min | 13,6 min | 12,9 min | 9,5 min (+3 min) | 4,1 min |
 | Barmbek | 17 | U Feldstraße | Richtung Innenstadt/Wedel | 10 min | 8,8 min | 7,5 min | 4,8 min (-7 min) | 4,1 min |
