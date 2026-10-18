@@ -1,0 +1,46 @@
+name: Verbindung zum Daten-Repository prüfen
+
+# Prüft, ob DATEN_REPO und DATEN_TOKEN richtig eingerichtet sind: liest das private
+# Daten-Repository und schreibt eine kleine Prüfdatei hinein. Gibt keine Daten aus.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/verbindung-pruefen.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pruefen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Einstellungen vorhanden?
+        env:
+          DATEN_REPO: ${{ vars.DATEN_REPO }}
+          HAT_TOKEN: ${{ secrets.DATEN_TOKEN != '' }}
+        run: |
+          if [ -z "$DATEN_REPO" ]; then echo "FEHLT: Variable DATEN_REPO"; exit 1; fi
+          if [ "$HAT_TOKEN" != "true" ]; then echo "FEHLT: Secret DATEN_TOKEN"; exit 1; fi
+          echo "OK: Variable DATEN_REPO und Secret DATEN_TOKEN sind gesetzt."
+
+      - name: Lesen
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.DATEN_REPO }}
+          token: ${{ secrets.DATEN_TOKEN }}
+          path: daten
+          fetch-depth: 1
+
+      - name: Schreiben
+        working-directory: daten
+        run: |
+          git config user.name "s1-monitor-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          date -u +%FT%TZ > verbindung_geprueft.txt
+          git add verbindung_geprueft.txt
+          git commit -q -m "Verbindung geprüft"
+          git push -q
+          echo "OK: Lesen und Schreiben im Daten-Repository funktionieren."
