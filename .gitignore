@@ -1,0 +1,16 @@
+# Rohdaten werden nicht im Code-Bereich gespeichert (Fahrplan: GitHub Releases)
+data/
+*.zip
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Zugangsdaten niemals ins Repository
+.env
+*.secret

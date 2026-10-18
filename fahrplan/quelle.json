@@ -1,0 +1,10 @@
+{
+  "_hinweis": "Wo der hvv-Fahrplan (GTFS) zu finden ist. Zuerst wird das Transparenzportal durchsucht; nur wenn das scheitert, werden die Ersatz-Adressen der Reihe nach probiert.",
+  "ckan_api": "https://suche.transparenz.hamburg.de/api/3/action/package_search",
+  "ckan_suche": "hvv Fahrplandaten GTFS",
+  "ersatz_urls": [
+    "https://daten.transparenz.hamburg.de/Dataport.HmbTG.ZS.Webservice.GetRessource100/GetRessource100.svc/f0073555-962c-4d55-870e-b94bb676ad9d/Upload__hvv_Rohdaten_GTFS_Fpl_20260408.ZIP"
+  ],
+  "lizenz": "Datenlizenz Deutschland – Namensnennung – Version 2.0 (https://www.govdata.de/dl-de/by-2-0)",
+  "quellenvermerk": "Datenquelle: Hamburger Verkehrsverbund GmbH (hvv), Transparenzportal Hamburg"
+}

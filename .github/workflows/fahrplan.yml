@@ -1,0 +1,78 @@
+name: Fahrplan importieren und aufbereiten
+
+# Läuft einmal pro Woche (Montag früh), bei Änderungen am Fahrplan-Code und auf Knopfdruck.
+on:
+  schedule:
+    - cron: "52 3 * * 1"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "fahrplan/**"
+      - "aufbereitung/**"
+      - ".github/workflows/fahrplan.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fahrplan
+  cancel-in-progress: false
+
+jobs:
+  fahrplan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Abhängigkeiten installieren
+        run: pip install -r requirements.txt
+
+      - name: Fahrplan herunterladen und prüfen
+        id: quelle
+        run: python fahrplan/quelle.py --ziel data/fahrplan
+
+      - name: Neue Fahrplan-Version als Release archivieren
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.quelle.outputs.tag }}
+        run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Diese Fahrplan-Version ist bereits archiviert ($TAG)."
+          else
+            gh release create "$TAG" \
+              "${{ steps.quelle.outputs.zip }}" \
+              "${{ steps.quelle.outputs.meta }}" \
+              --title "Fahrplan gültig ${{ steps.quelle.outputs.gueltig_von }} bis ${{ steps.quelle.outputs.gueltig_bis }}" \
+              --notes "Unveränderte Rohdaten des hvv-Soll-Fahrplans (GTFS). Prüfsumme und Quelle siehe fahrplan_meta.json. Datenquelle: Hamburger Verkehrsverbund GmbH (hvv), Transparenzportal Hamburg. Lizenz: Datenlizenz Deutschland – Namensnennung – Version 2.0."
+          fi
+
+      - name: Fahrplan aufbereiten
+        run: |
+          if [ -f aufbereitung/fahrplan_aufbereiten.py ]; then
+            python aufbereitung/fahrplan_aufbereiten.py \
+              --zip "${{ steps.quelle.outputs.zip }}" \
+              --meta "${{ steps.quelle.outputs.meta }}" \
+              --ziel ergebnisse/fahrplan
+          else
+            echo "Noch keine Aufbereitung vorhanden."
+          fi
+
+      - name: Ergebnisse speichern
+        run: |
+          git config user.name "s1-monitor-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ergebnisse
+          if git diff --cached --quiet; then
+            echo "Keine neuen Ergebnisse."
+          else
+            git commit -m "Fahrplan-Ergebnisse aktualisiert"
+            git pull --rebase
+            git push
+          fi
