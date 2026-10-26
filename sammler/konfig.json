@@ -8,7 +8,7 @@
   "max_eintraege": 400,
   "alle_haltestellen_im_knoten": true,
   "meldungen_alle_s": 300,
-  "meldungen_linien": ["S1"],
+  "meldungen_linien": [],
   "pause_nach_fehler_s": [30, 60, 120, 300, 600],
   "max_fehler_in_folge_bis_abbruch": 20,
   "stationen": [

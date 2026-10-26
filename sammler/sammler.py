@@ -113,8 +113,10 @@ def abfrage_stationen(gti: GTI, cfg: dict, station: dict, art: str, speicher: Sp
 
 def abfrage_meldungen(gti: GTI, cfg: dict, speicher: Speicher) -> None:
     t0 = jetzt()
-    antw = gti.anfrage("getAnnouncements", {"names": cfg["meldungen_linien"], "full": True,
-                                            "filterPlanned": "NO_FILTER"})
+    nutzlast = {"full": True, "filterPlanned": "NO_FILTER"}
+    if cfg.get("meldungen_linien"):  # leer = alle hvv-Meldungen (Auswahl erst in der Auswertung)
+        nutzlast["names"] = cfg["meldungen_linien"]
+    antw = gti.anfrage("getAnnouncements", nutzlast)
     meldungen = antw.daten.get("announcements") or []
     neu = sum(speicher.nimm_auf("meldungen", meldung_zu_zeile(m, t0)) for m in meldungen)
     speicher.protokolliere(zeit_utc=t0, methode="getAnnouncements", station=None, art=None,

@@ -12,7 +12,7 @@ auch nach einem etwaigen Widerruf des Zugangs.
   Ankunfts-Abfragen sind für unseren Zugang nicht freigegeben (HTTP 403, festgestellt am 26.10.2026);
   die Ankunft an Endstationen wird deshalb über die Abfahrt am vorletzten Halt abgeschätzt.
 - Speichert alle Linien an diesen Stationen, auch Busse und U-Bahn am selben Knoten.
-- Holt alle 5 Minuten die Störungsmeldungen zur S1.
+- Holt alle 5 Minuten alle Störungsmeldungen des hvv (nicht nur S1, damit auch netzweite Störungen erfasst werden).
 - Speichert **nur Änderungen**: Eine neue Zeile entsteht, wenn eine Fahrt zum ersten Mal auftaucht
   oder sich ein Feld ändert (Verspätung, Ausfall, Gleis ...). Der vollständige Rohdatensatz jeder
   Änderung bleibt erhalten.
@@ -66,6 +66,7 @@ Ausschalten: Variable `SAMMLER_AKTIV` löschen oder auf `nein` setzen.
 - [ ] Bedeutet `timeOffset` die Soll-Zeit (Verspätung separat in `delay`)? Stichprobe gegen die hvv-App.
 - [x] Ankunfts-Abfragen: für unseren Zugang nicht freigegeben (Methodik D2 angepasst).
 - [ ] Werden Teilausfälle (Flügelung in Ohlsdorf) als Ausfall gemeldet (Methodik D4)?
+- [x] Gründe: einzelne Abfahrten tragen Gründe im Feld `attributes` (Typ `REALTIME_REASON`, z. B. „Kurzfristige Erkrankung von Personal“). Für die S1 bisher keine; die S1 hatte am 26.10. abends 20+ min Verspätung ohne Grund und ohne Störungsmeldung.
 - [ ] Wie viele Abfragen pro Tag, wie viele Fehler, wie groß die Tagesdateien?
 
 ## Hinweis zu GitHub Actions
