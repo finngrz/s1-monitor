@@ -19,9 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -37,7 +37,7 @@ jobs:
           echo "vor3=$(TZ=Europe/Berlin date -d '3 days ago' +%F)" >> "$GITHUB_OUTPUT"
 
       - name: Privates Daten-Repository holen (letzte drei Tage)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ vars.DATEN_REPO }}
           token: ${{ secrets.DATEN_TOKEN }}

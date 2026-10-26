@@ -153,3 +153,55 @@ def test_kompaktieren(tmp_path):
     assert [p.name for p in ordner.iterdir()] == ["tag.parquet"]
     df = pd.read_parquet(ordner / "tag.parquet")
     assert list(df.verspaetung_s) == [0, 60]  # doppelter Stand entfernt, Änderung bleibt
+
+
+class SitzungOhneMeldungen(FalscheSitzung):
+    """Wie FalscheSitzung, aber Störungsmeldungen sind für den Zugang gesperrt."""
+
+    def post(self, url, data, headers, timeout):
+        if url.endswith("/getAnnouncements"):
+            self.anfragen.append(("getAnnouncements", json.loads(data), headers))
+            return FalscheAntwort(403, {})
+        return super().post(url, data, headers, timeout)
+
+
+def test_ohne_meldungen_wird_weiter_gesammelt(tmp_path, monkeypatch):
+    sitzung = SitzungOhneMeldungen()
+    monkeypatch.setattr(sammler_modul, "GTI", lambda *a, **k: gti_modul.GTI(*a, **k, sitzung=sitzung))
+    cfg = json.loads((WURZEL / "sammler" / "konfig.json").read_text(encoding="utf-8"))
+    cfg["stationen"] = [{"name": "Ohlsdorf", "ifopt": "de:02000:90950"}]
+    cfg["zyklus_s"], cfg["max_abfragen_pro_s"], cfg["meldungen_alle_s"] = 0.2, 50, 0
+    konfig = tmp_path / "konfig.json"
+    konfig.write_text(json.dumps(cfg), encoding="utf-8")
+    monkeypatch.setenv("GTI_USER", "nutzer")
+    monkeypatch.setenv("GTI_PASS", "pw")
+    monkeypatch.setattr(sammler_modul.time, "sleep", lambda s: None)
+    monkeypatch.setattr(sys, "argv", ["sammler", "--daten", str(tmp_path / "d"), "--dauer-min", "0.01",
+                                      "--konfig", str(konfig)])
+    assert sammler_modul.main() == 0
+    methoden = [a[0] for a in sitzung.anfragen]
+    assert methoden.count("getAnnouncements") == 1  # nach der Ablehnung nicht erneut versucht
+    assert methoden.count("departureList") > 3  # Abfahrten werden weiter gesammelt
+
+
+def test_gesperrte_abfahrten_fuehren_zu_rotem_lauf(tmp_path, monkeypatch):
+    class Gesperrt(FalscheSitzung):
+        def post(self, url, data, headers, timeout):
+            if url.endswith("/departureList"):
+                self.anfragen.append(("departureList", json.loads(data), headers))
+                return FalscheAntwort(403, {})
+            return super().post(url, data, headers, timeout)
+
+    sitzung = Gesperrt()
+    monkeypatch.setattr(sammler_modul, "GTI", lambda *a, **k: gti_modul.GTI(*a, **k, sitzung=sitzung))
+    cfg = json.loads((WURZEL / "sammler" / "konfig.json").read_text(encoding="utf-8"))
+    cfg["stationen"] = [{"name": "Ohlsdorf", "ifopt": "de:02000:90950"}]
+    cfg["zyklus_s"], cfg["max_abfragen_pro_s"] = 0.2, 50
+    konfig = tmp_path / "konfig.json"
+    konfig.write_text(json.dumps(cfg), encoding="utf-8")
+    monkeypatch.setenv("GTI_USER", "nutzer")
+    monkeypatch.setenv("GTI_PASS", "pw")
+    monkeypatch.setattr(sammler_modul.time, "sleep", lambda s: None)
+    monkeypatch.setattr(sys, "argv", ["sammler", "--daten", str(tmp_path / "d"), "--dauer-min", "0.01",
+                                      "--konfig", str(konfig)])
+    assert sammler_modul.main() == 4

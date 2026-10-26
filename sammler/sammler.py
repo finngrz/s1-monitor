@@ -77,7 +77,7 @@ def pruefe_stationen(gti: GTI, cfg: dict, datei: Path, speicher: Speicher) -> li
                     wahl, guete = t, "Name"
                     break
         if wahl is None:
-            print(f"WARNUNG: Keine eindeutige Station für '{st['name']}' gefunden, wird übersprungen.")
+            print(f"::warning title=Sammler::Keine eindeutige Station für '{st['name']}' gefunden, wird übersprungen.")
             continue
         eintrag = {"gti": {k: wahl.get(k) for k in ("name", "city", "id", "globalId", "type")}, "zuordnung": guete}
         bekannt[st["name"]] = eintrag
@@ -146,7 +146,7 @@ def main() -> int:
     try:
         stationen = pruefe_stationen(gti, cfg, daten / "stationen_geprueft.json", speicher)
     except GTIFehler as f:
-        print(f"Abbruch beim Prüfen der Stationen: {f}")
+        print(f"::error title=Sammler::Abbruch beim Prüfen der Stationen (HTTP {f.http_status}, {f.return_code}).")
         speicher.schreibe()
         return 2
 
@@ -156,6 +156,7 @@ def main() -> int:
     naechste_meldung = time.monotonic()
     naechstes_schreiben = time.monotonic() + SCHREIB_INTERVALL_S
     fehler_in_folge = 0
+    abgebrochen = meldungen_aus = False
     print(f"Lauf {lauf_id}: {len(stationen)} Stationen, {len(aufgaben)} Abfragen je Runde, "
           f"Abstand {abstand:.1f} s, Dauer {args.dauer_min:.0f} min.")
 
@@ -175,18 +176,27 @@ def main() -> int:
                 abfrage_stationen(gti, cfg, aufgabe[0], aufgabe[1], speicher)
             fehler_in_folge = 0
         except GTIFehler as f:
-            fehler_in_folge += 1
             name = None if aufgabe[0] == "meldungen" else aufgabe[0]["name"]
             speicher.protokolliere(zeit_utc=jetzt(), methode="getAnnouncements" if name is None else "departureList",
                                    station=name, art=None if name is None else aufgabe[1],
                                    http_status=f.http_status, return_code=f.return_code, anzahl=None,
                                    dauer_ms=None, fehler=str(f), neu=None)
+            if name is None and f.dauerhaft:
+                # Meldungen sind für diesen Zugang nicht freigegeben: nur die Meldungen abschalten,
+                # Abfahrten weiter sammeln.
+                meldungen_aus = True
+                naechste_meldung = float("inf")
+                print(f"::warning title=Sammler::Störungsmeldungen nicht verfügbar (HTTP {f.http_status}, {f.return_code}); "
+                      "sammle ohne Meldungen weiter.")
+                continue
+            fehler_in_folge += 1
             if f.dauerhaft or fehler_in_folge >= cfg["max_fehler_in_folge_bis_abbruch"]:
-                print(f"Abbruch nach Fehler: {f}")
+                print(f"::error title=Sammler::Abbruch nach Fehler (HTTP {f.http_status}, {f.return_code}).")
+                abgebrochen = True
                 break
             pausen = cfg["pause_nach_fehler_s"]
             pause = pausen[min(fehler_in_folge - 1, len(pausen) - 1)]
-            print(f"Fehler ({f}); Pause {pause} s.")
+            print(f"Fehler (HTTP {f.http_status}, {f.return_code}); Pause {pause} s.")
             time.sleep(min(pause, max(0.0, ende - time.monotonic())))
             takt = time.monotonic()
             continue
@@ -200,8 +210,11 @@ def main() -> int:
 
     speicher.schreibe()
     z = speicher.zaehler
-    print(f"Lauf beendet: {z['abfragen']} Abfragen, {z['fehler']} Fehler, "
-          f"{z.get('abfahrten_neu', 0)} neue/geänderte Abfahrten, {z.get('meldungen_neu', 0)} neue Meldungen.")
+    print(f"::notice title=Sammler::Lauf beendet: {z['abfragen']} Abfragen, {z['fehler']} Fehler, "
+          f"{z.get('abfahrten_neu', 0)} neue/geänderte Abfahrten, {z.get('meldungen_neu', 0)} neue Meldungen"
+          + (", Meldungen nicht verfügbar" if meldungen_aus else "") + ".")
+    if abgebrochen:
+        return 4  # früh abgebrochen: Lauf soll auf GitHub rot erscheinen
     return 0 if z["abfragen"] > z["fehler"] else 3
 
 

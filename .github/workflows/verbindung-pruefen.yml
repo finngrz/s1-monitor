@@ -27,7 +27,7 @@ jobs:
           echo "OK: Variable DATEN_REPO und Secret DATEN_TOKEN sind gesetzt."
 
       - name: Lesen
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ vars.DATEN_REPO }}
           token: ${{ secrets.DATEN_TOKEN }}
