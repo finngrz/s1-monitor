@@ -1,7 +1,10 @@
 # Echtzeit-Sammler (Stufe 2)
 
-**Status: fertig gebaut und getestet, aber ausgeschaltet.** Er wird erst eingeschaltet, wenn die
-schriftliche Zustimmung der Hochbahn zur Nutzung der Geofox-Schnittstelle vorliegt.
+**Status: fertig gebaut und getestet.** Die Hamburger Hochbahn AG hat am 26.10.2026 per E-Mail
+schriftlich bestätigt, dass sie keine Einwände hat gegen: das Speichern der Echtzeitdaten für die
+statistische Auswertung, das Veröffentlichen aggregierter Ergebnisse (ohne Rohdaten), das geplante
+Abfragevolumen (höchstens 0,8 Abfragen pro Sekunde) und den Fortbestand veröffentlichter Auswertungen
+auch nach einem etwaigen Widerruf des Zugangs.
 
 ## Was er tut
 
@@ -48,7 +51,7 @@ Jede Nacht werden die vielen kleinen Dateien des Vortags zu einer `tag.parquet` 
    - Secret `DATEN_TOKEN` = der Schlüssel aus Schritt 2
    - Variable `DATEN_REPO` = `finngrz/s1-monitor-daten`
 
-## Einschalten (erst nach schriftlicher Zustimmung der Hochbahn)
+## Einschalten
 
 1. Secrets `GTI_USER` und `GTI_PASS` = Zugangsdaten der Hochbahn.
 2. Variable `SAMMLER_AKTIV` = `ja`.

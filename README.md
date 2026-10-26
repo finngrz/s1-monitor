@@ -4,8 +4,8 @@ Ein privates, nicht-kommerzielles Projekt, das die Pünktlichkeit der Hamburger 
 Abstimmung der Busanschlüsse an ihren Knotenpunkten (Ohlsdorf, Barmbek, Berliner Tor)
 transparent und nachvollziehbar auswertet.
 
-**Status:** Stufe 1 (Fahrplan-Analysen) läuft. Stufe 2 (Echtzeit-Sammler) ist fertig gebaut und
-getestet, aber ausgeschaltet bis zur schriftlichen Zustimmung der Hochbahn ([sammler/README.md](sammler/README.md)).
+**Status:** Stufe 1 (Fahrplan-Analysen) läuft. Stufe 2 (Echtzeit-Sammler) ist bereit; die schriftliche
+Zustimmung der Hochbahn liegt seit 26.10.2026 vor ([sammler/README.md](sammler/README.md)).
 **Aktuelle Ergebnisse:** [analysen/ERGEBNISSE_STUFE1.md](analysen/ERGEBNISSE_STUFE1.md)
 
 ## Was das Projekt beantworten soll
