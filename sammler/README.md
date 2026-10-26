@@ -70,8 +70,11 @@ Ausschalten: Variable `SAMMLER_AKTIV` löschen oder auf `nein` setzen.
 
 ## Hinweis zu GitHub Actions
 
-GitHub startet geplante Läufe teils mit Verspätung; Lücken werden im Abfrageprotokoll sichtbar und in
-der Auswertung ausgewiesen. Geplante Läufe werden in öffentlichen Repositorys nach 60 Tagen ohne
+GitHub hält kurze Zeitpläne nicht zuverlässig ein (statt alle 20 Minuten starteten Läufe nur alle 1–2,5
+Stunden). Der Sammler läuft deshalb als Kette: Jeder Lauf sammelt bis zu 5,5 Stunden in Abschnitten von
+28 Minuten, speichert nach jedem Abschnitt und startet am Ende selbst seinen Nachfolger. Ein stündlicher
+Zeitplan fängt den Fall ab, dass die Kette reißt. Verbleibende Lücken werden im Abfrageprotokoll sichtbar
+und in der Auswertung ausgewiesen. Geplante Läufe werden in öffentlichen Repositorys nach 60 Tagen ohne
 Änderung abgeschaltet; der wöchentliche Fahrplan-Lauf aktualisiert den Bericht und verhindert das.
 Falls GitHub einen dauerhaften Sammelbetrieb künftig nicht mehr zulässt, läuft derselbe Code auch auf
 einem eigenen Rechner (z. B. Raspberry Pi).
