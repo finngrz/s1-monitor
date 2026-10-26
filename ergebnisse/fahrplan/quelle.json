@@ -7,8 +7,8 @@
   "lizenz": "Datenlizenz Deutschland – Namensnennung – Version 2.0 (https://www.govdata.de/dl-de/by-2-0)",
   "zeilen": {
     "s1_halte": 33148,
-    "knoten_bus": 12884,
-    "verkehrstage": 3059,
+    "knoten_bus": 20390,
+    "verkehrstage": 4231,
     "tage": 72,
     "s1_fahrten": 1513
   }

@@ -61,12 +61,12 @@ Für jede S1-Ankunft aus der Innenstadt in Ohlsdorf zwischen 06 und 20 Uhr: Wie 
 
 Buslinien an Ohlsdorf, Barmbek und Berliner Tor, die mindestens alle 20 Minuten fahren, im Tagesverkehr 06–20 Uhr. Sortiert nach der möglichen Ersparnis: Wie viel kürzer wäre die mittlere Umsteigezeit, wenn der Bus um bis zu ±10 Minuten anders läge? „Zufällige Lage“ ist der Durchschnitt über alle Verschiebungen, also der Wert ohne jede Abstimmung. Unberücksichtigt bleibt, dass ein Bus auch andere Anschlüsse bedient. Das ist eine Vorschau auf F8, keine fertige Empfehlung.
 
-Insgesamt liegen 44 % dieser Verbindungen besser als bei zufälliger Lage.
+Insgesamt liegen 48 % dieser Verbindungen besser als bei zufälliger Lage.
 
 | Knoten | Bus | Bus Richtung | S1 kommend | Bus-Takt | Ø heute | Ø bei zufälliger Lage | Ø bei bester Lage | Mögliche Ersparnis |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Barmbek | 172 | Lentersweg | Richtung Innenstadt/Wedel | 20 min | 15,8 min | 12,5 min | 9,7 min (+1 min) | 6,1 min |
 | Barmbek | 172 | Mundsburger Brücke | Richtung Poppenbüttel/Flughafen | 10 min | 10,2 min | 7,5 min | 4,2 min (-9 min) | 6,1 min |
+| Barmbek | 172 | Lentersweg | Richtung Innenstadt/Wedel | 20 min | 15,8 min | 12,5 min | 9,7 min (+1 min) | 6,1 min |
 | Barmbek | 177 | Owiesenstraße | Richtung Poppenbüttel/Flughafen | 10 min | 9,5 min | 7,8 min | 4,4 min (-8 min) | 5,1 min |
 | Barmbek | 277 | U S Barmbek | Richtung Innenstadt/Wedel | 20 min | 12,8 min | 10,0 min | 7,7 min (-8 min) | 5,1 min |
 | Barmbek | 18 | Hauptbahnhof/ZOB | Richtung Innenstadt/Wedel | 10 min | 9,8 min | 7,5 min | 4,8 min (-8 min) | 5,1 min |

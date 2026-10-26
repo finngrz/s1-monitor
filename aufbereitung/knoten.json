@@ -1,9 +1,35 @@
 {
   "_hinweis": "Welche Linien und Knotenpunkte aufbereitet werden. Bus-Haltestellen gehören zu einem Knoten, wenn ihr Name mit einem der Präfixe beginnt (offizielle hvv-Benennung der Umsteigehaltestellen).",
-  "schnellbahn_linien": ["S1"],
+  "schnellbahn_linien": [
+    "S1"
+  ],
   "knoten": {
-    "Ohlsdorf": {"bahnsteig_name": "Ohlsdorf", "bus_praefixe": ["U S Ohlsdorf", "S Ohlsdorf"]},
-    "Barmbek": {"bahnsteig_name": "Barmbek", "bus_praefixe": ["U S Barmbek", "S Barmbek"]},
-    "Berliner Tor": {"bahnsteig_name": "Berliner Tor", "bus_praefixe": ["U S Berliner Tor", "S Berliner Tor"]}
+    "Ohlsdorf": {
+      "bahnsteig_name": "Ohlsdorf",
+      "bus_praefixe": [
+        "U S Ohlsdorf",
+        "S Ohlsdorf"
+      ]
+    },
+    "Barmbek": {
+      "bahnsteig_name": "Barmbek",
+      "bus_praefixe": [
+        "U S Barmbek",
+        "S Barmbek"
+      ]
+    },
+    "Berliner Tor": {
+      "bahnsteig_name": "Berliner Tor",
+      "bus_praefixe": [
+        "U S Berliner Tor",
+        "S Berliner Tor"
+      ]
+    },
+    "Poppenbüttel": {
+      "bahnsteig_name": "Poppenbüttel",
+      "bus_praefixe": [
+        "S Poppenbüttel"
+      ]
+    }
   }
 }
