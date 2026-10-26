@@ -1,6 +1,6 @@
 # Methodik
 
-Version 0.3 · Stand 18.10.2026
+Version 0.4 · Stand 26.10.2026
 
 Grundsatz: Rohdaten werden unverändert gespeichert. Alle Definitionen werden erst bei der
 Auswertung angewendet und können daher geändert werden, ohne Daten zu verlieren. Jede
@@ -11,7 +11,7 @@ Auswertung angewendet und können daher geändert werden, ohne Daten zu verliere
 | Nr. | Begriff | Definition |
 | --- | --- | --- |
 | D1 | Ist-Verspätung | Letzte Prognose vor der Soll-Abfahrt; Variante: Prognose x Minuten vorher |
-| D2 | Messpunkt | Abfahrt; an Endstationen die Ankunft, sofern die Schnittstelle sie liefert (offen) |
+| D2 | Messpunkt | Abfahrt. Ankünfte liefert die Schnittstelle für unseren Zugang nicht; an Endstationen gilt die Abfahrt am vorletzten Halt plus Soll-Fahrzeit als Näherung |
 | D3 | Ausfall | Fahrt als ausgefallen gekennzeichnet |
 | D4 | Teilausfall | Ausfall ab einer bestimmten Station, z. B. Poppenbüttel-Teil ab Ohlsdorf |
 | D5 | Fehlende Fahrt | Steht im Soll-Fahrplan, erscheint nie in den Echtzeitdaten; wird separat ausgewiesen |
@@ -54,9 +54,11 @@ Für alle weitergegebenen Zahlen gilt, sofern nicht anders angegeben:
 
 - **Quelle:** Geofox-Schnittstelle (`departureList` mit `useRealtime`, `getAnnouncements`), API-Version 63.
 - **Umfang:** alle 31 regulären S1-Stationen, alle Linien am jeweiligen Knoten, 60 Minuten Vorausschau;
-  an Wedel, Poppenbüttel und Flughafen zusätzlich Ankünfte. Störungsmeldungen alle 5 Minuten.
+  Störungsmeldungen alle 5 Minuten.
 - **Takt:** jede Station etwa einmal pro Minute, höchstens 0,8 Abfragen pro Sekunde, gleichmäßig verteilt.
 - **Soll-Zeit:** Bezugszeit der Antwort plus `timeOffset` (Minuten). Ist-Verspätung aus `delay` (Sekunden).
+- **Auflösung:** Die Schnittstelle liefert Verspätungen nur in ganzen Minuten. Schwellen unter 1 Minute sind daher nicht auswertbar.
+- **Geflügelte Züge** erscheinen an Stationen vor Ohlsdorf zweimal (Ziel Flughafen und Ziel Poppenbüttel); in der Auswertung zählen sie als ein Zug.
 - **Speicherung:** nur Änderungen je Fahrt und Station, mit vollständigem Rohdatensatz; jede Abfrage im
   Protokoll. Rohdaten in einem privaten Repository, nie veröffentlicht.
 
@@ -64,6 +66,7 @@ Für alle weitergegebenen Zahlen gilt, sofern nicht anders angegeben:
 
 | Datum | Version | Änderung |
 | --- | --- | --- |
+| 26.10.2026 | 0.4 | Erste Echtzeitdaten: Ankünfte nicht verfügbar (D2 angepasst), Minuten-Auflösung, geflügelte Züge |
 | 26.10.2026 | 0.3 | Schriftliche Zustimmung der Hochbahn zur statistischen Nutzung liegt vor (keine Methodikänderung) |
 | 18.10.2026 | 0.3 | Echtzeit-Erhebung beschrieben (Sammler gebaut, noch ausgeschaltet) |
 | 18.10.2026 | 0.2 | Fahrplan-Analysen präzisiert: Tagesverkehr, Betriebspausen, geflügelte Züge, Knoten-Haltestellen, Stichtage, Verschiebungs-Vorschau |

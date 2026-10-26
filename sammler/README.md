@@ -8,8 +8,9 @@ auch nach einem etwaigen Widerruf des Zugangs.
 
 ## Was er tut
 
-- Fragt alle 31 regulären S1-Stationen reihum ab (Abfahrten, an den Endstationen Wedel,
-  Poppenbüttel und Flughafen zusätzlich Ankünfte), etwa einmal pro Minute je Station.
+- Fragt alle 31 regulären S1-Stationen reihum ab (Abfahrten), etwa einmal pro Minute je Station.
+  Ankunfts-Abfragen sind für unseren Zugang nicht freigegeben (HTTP 403, festgestellt am 26.10.2026);
+  die Ankunft an Endstationen wird deshalb über die Abfahrt am vorletzten Halt abgeschätzt.
 - Speichert alle Linien an diesen Stationen, auch Busse und U-Bahn am selben Knoten.
 - Holt alle 5 Minuten die Störungsmeldungen zur S1.
 - Speichert **nur Änderungen**: Eine neue Zeile entsteht, wenn eine Fahrt zum ersten Mal auftaucht
@@ -61,9 +62,9 @@ Ausschalten: Variable `SAMMLER_AKTIV` löschen oder auf `nein` setzen.
 
 ## Nach dem ersten Tag prüfen
 
-- [ ] Alle 31 Stationen in `stationen_geprueft.json` richtig zugeordnet?
+- [x] Alle 31 Stationen in `stationen_geprueft.json` richtig zugeordnet (alle über die globale ID).
 - [ ] Bedeutet `timeOffset` die Soll-Zeit (Verspätung separat in `delay`)? Stichprobe gegen die hvv-App.
-- [ ] Liefern die Ankunfts-Abfragen an den Endstationen brauchbare Daten (Methodik D2)?
+- [x] Ankunfts-Abfragen: für unseren Zugang nicht freigegeben (Methodik D2 angepasst).
 - [ ] Werden Teilausfälle (Flügelung in Ohlsdorf) als Ausfall gemeldet (Methodik D4)?
 - [ ] Wie viele Abfragen pro Tag, wie viele Fehler, wie groß die Tagesdateien?
 

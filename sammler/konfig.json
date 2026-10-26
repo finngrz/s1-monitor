@@ -12,7 +12,7 @@
   "pause_nach_fehler_s": [30, 60, 120, 300, 600],
   "max_fehler_in_folge_bis_abbruch": 20,
   "stationen": [
-    {"name": "Wedel", "ifopt": "de:01056:85950", "ankuenfte": true},
+    {"name": "Wedel", "ifopt": "de:01056:85950"},
     {"name": "Rissen", "ifopt": "de:02000:81953"},
     {"name": "Sülldorf", "ifopt": "de:02000:81952"},
     {"name": "Iserbrook", "ifopt": "de:02000:81951"},
@@ -41,7 +41,7 @@
     {"name": "Kornweg (Klein Borstel)", "ifopt": "de:02000:71950"},
     {"name": "Hoheneichen", "ifopt": "de:02000:71951"},
     {"name": "Wellingsbüttel", "ifopt": "de:02000:71952"},
-    {"name": "Poppenbüttel", "ifopt": "de:02000:71953", "ankuenfte": true},
-    {"name": "Hamburg Airport (Flughafen)", "ifopt": "de:02000:99651", "ankuenfte": true}
+    {"name": "Poppenbüttel", "ifopt": "de:02000:71953"},
+    {"name": "Hamburg Airport (Flughafen)", "ifopt": "de:02000:99651"}
   ]
 }

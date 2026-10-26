@@ -205,3 +205,29 @@ def test_gesperrte_abfahrten_fuehren_zu_rotem_lauf(tmp_path, monkeypatch):
     monkeypatch.setattr(sys, "argv", ["sammler", "--daten", str(tmp_path / "d"), "--dauer-min", "0.01",
                                       "--konfig", str(konfig)])
     assert sammler_modul.main() == 4
+
+
+def test_ohne_ankuenfte_wird_weiter_gesammelt(tmp_path, monkeypatch):
+    class OhneAnkuenfte(FalscheSitzung):
+        def post(self, url, data, headers, timeout):
+            if url.endswith("/departureList") and json.loads(data).get("departure") is False:
+                self.anfragen.append(("departureList", json.loads(data), headers))
+                return FalscheAntwort(403, {})
+            return super().post(url, data, headers, timeout)
+
+    sitzung = OhneAnkuenfte()
+    monkeypatch.setattr(sammler_modul, "GTI", lambda *a, **k: gti_modul.GTI(*a, **k, sitzung=sitzung))
+    cfg = json.loads((WURZEL / "sammler" / "konfig.json").read_text(encoding="utf-8"))
+    cfg["stationen"] = [{"name": "Poppenbüttel", "ifopt": "de:02000:71953", "ankuenfte": True}]
+    cfg["zyklus_s"], cfg["max_abfragen_pro_s"] = 0.2, 50
+    konfig = tmp_path / "konfig.json"
+    konfig.write_text(json.dumps(cfg), encoding="utf-8")
+    monkeypatch.setenv("GTI_USER", "nutzer")
+    monkeypatch.setenv("GTI_PASS", "pw")
+    monkeypatch.setattr(sammler_modul.time, "sleep", lambda s: None)
+    monkeypatch.setattr(sys, "argv", ["sammler", "--daten", str(tmp_path / "d"), "--dauer-min", "0.01",
+                                      "--konfig", str(konfig)])
+    assert sammler_modul.main() == 0
+    an = [a for a in sitzung.anfragen if a[0] == "departureList" and a[1].get("departure") is False]
+    ab = [a for a in sitzung.anfragen if a[0] == "departureList" and a[1].get("departure") is True]
+    assert len(an) == 1 and len(ab) > 3

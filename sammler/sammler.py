@@ -156,7 +156,7 @@ def main() -> int:
     naechste_meldung = time.monotonic()
     naechstes_schreiben = time.monotonic() + SCHREIB_INTERVALL_S
     fehler_in_folge = 0
-    abgebrochen = meldungen_aus = False
+    abgebrochen = meldungen_aus = ankuenfte_aus = False
     print(f"Lauf {lauf_id}: {len(stationen)} Stationen, {len(aufgaben)} Abfragen je Runde, "
           f"Abstand {abstand:.1f} s, Dauer {args.dauer_min:.0f} min.")
 
@@ -189,6 +189,13 @@ def main() -> int:
                 print(f"::warning title=Sammler::Störungsmeldungen nicht verfügbar (HTTP {f.http_status}, {f.return_code}); "
                       "sammle ohne Meldungen weiter.")
                 continue
+            if name is not None and aufgabe[1] == "an" and f.dauerhaft:
+                # Ankünfte sind für diesen Zugang nicht freigegeben: nur die Ankunfts-Abfragen streichen.
+                aufgaben = [a for a in aufgaben if a[1] != "an"]
+                ankuenfte_aus = True
+                print(f"::warning title=Sammler::Ankünfte nicht verfügbar (HTTP {f.http_status}); "
+                      "sammle nur Abfahrten.")
+                continue
             fehler_in_folge += 1
             if f.dauerhaft or fehler_in_folge >= cfg["max_fehler_in_folge_bis_abbruch"]:
                 print(f"::error title=Sammler::Abbruch nach Fehler (HTTP {f.http_status}, {f.return_code}).")
@@ -212,7 +219,8 @@ def main() -> int:
     z = speicher.zaehler
     print(f"::notice title=Sammler::Lauf beendet: {z['abfragen']} Abfragen, {z['fehler']} Fehler, "
           f"{z.get('abfahrten_neu', 0)} neue/geänderte Abfahrten, {z.get('meldungen_neu', 0)} neue Meldungen"
-          + (", Meldungen nicht verfügbar" if meldungen_aus else "") + ".")
+          + (", Meldungen nicht verfügbar" if meldungen_aus else "")
+          + (", Ankünfte nicht verfügbar" if ankuenfte_aus else "") + ".")
     if abgebrochen:
         return 4  # früh abgebrochen: Lauf soll auf GitHub rot erscheinen
     return 0 if z["abfragen"] > z["fehler"] else 3
