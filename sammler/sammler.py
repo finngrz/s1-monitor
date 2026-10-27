@@ -21,7 +21,7 @@ import json
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 HIER = Path(__file__).resolve().parent
@@ -90,12 +90,15 @@ def pruefe_stationen(gti: GTI, cfg: dict, datei: Path, speicher: Speicher) -> li
 def abfrage_stationen(gti: GTI, cfg: dict, station: dict, art: str, speicher: Speicher) -> None:
     """Eine departureList-Abfrage (Abfahrten oder Ankünfte) für eine Station."""
     t0 = jetzt()
-    lokal = t0.astimezone(BERLIN)
+    # Abfrage beginnt einige Minuten in der Vergangenheit: So sehen wir bereits abgefahrene Züge
+    # mit ihrer nachträglich korrigierten Abfahrtszeit (falls die Schnittstelle sie liefert).
+    rueckblick = cfg.get("rueckblick_min", 0)
+    lokal = (t0 - timedelta(minutes=rueckblick)).astimezone(BERLIN)
     nutzlast = {
         "station": {k: v for k, v in station["gti"].items() if v is not None},
         "time": {"date": lokal.strftime("%d.%m.%Y"), "time": lokal.strftime("%H:%M")},
         "maxList": cfg["max_eintraege"],
-        "maxTimeOffset": cfg["vorausschau_min"],
+        "maxTimeOffset": cfg["vorausschau_min"] + rueckblick,
         "allStationsInChangingNode": cfg["alle_haltestellen_im_knoten"],
         "useRealtime": True,
         "departure": art == "ab",

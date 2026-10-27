@@ -5,6 +5,7 @@
   "zyklus_s": 60,
   "max_abfragen_pro_s": 0.8,
   "vorausschau_min": 60,
+  "rueckblick_min": 10,
   "max_eintraege": 400,
   "alle_haltestellen_im_knoten": true,
   "meldungen_alle_s": 300,

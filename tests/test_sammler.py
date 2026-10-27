@@ -231,3 +231,24 @@ def test_ohne_ankuenfte_wird_weiter_gesammelt(tmp_path, monkeypatch):
     an = [a for a in sitzung.anfragen if a[0] == "departureList" and a[1].get("departure") is False]
     ab = [a for a in sitzung.anfragen if a[0] == "departureList" and a[1].get("departure") is True]
     assert len(an) == 1 and len(ab) > 3
+
+
+def test_rueckblick_in_anfrage(tmp_path, monkeypatch):
+    sitzung = FalscheSitzung()
+    monkeypatch.setattr(sammler_modul, "GTI", lambda *a, **k: gti_modul.GTI(*a, **k, sitzung=sitzung))
+    cfg = json.loads((WURZEL / "sammler" / "konfig.json").read_text(encoding="utf-8"))
+    cfg["stationen"] = [{"name": "Ohlsdorf", "ifopt": "de:02000:90950"}]
+    cfg["zyklus_s"], cfg["max_abfragen_pro_s"], cfg["rueckblick_min"] = 0.2, 50, 10
+    konfig = tmp_path / "konfig.json"
+    konfig.write_text(json.dumps(cfg), encoding="utf-8")
+    monkeypatch.setenv("GTI_USER", "nutzer")
+    monkeypatch.setenv("GTI_PASS", "pw")
+    monkeypatch.setattr(sammler_modul.time, "sleep", lambda s: None)
+    monkeypatch.setattr(sys, "argv", ["sammler", "--daten", str(tmp_path / "d"), "--dauer-min", "0.01",
+                                      "--konfig", str(konfig)])
+    assert sammler_modul.main() == 0
+    dl = [a[1] for a in sitzung.anfragen if a[0] == "departureList"][0]
+    assert dl["maxTimeOffset"] == cfg["vorausschau_min"] + 10
+    angefragt = datetime.strptime(dl["time"]["date"] + " " + dl["time"]["time"], "%d.%m.%Y %H:%M").replace(tzinfo=BERLIN)
+    abstand = (datetime.now(BERLIN) - angefragt).total_seconds() / 60
+    assert 9 <= abstand <= 12

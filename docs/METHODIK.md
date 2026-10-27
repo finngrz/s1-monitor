@@ -58,6 +58,7 @@ Für alle weitergegebenen Zahlen gilt, sofern nicht anders angegeben:
 - **Takt:** jede Station etwa einmal pro Minute, höchstens 0,8 Abfragen pro Sekunde, gleichmäßig verteilt.
 - **Soll-Zeit:** Bezugszeit der Antwort plus `timeOffset` (Minuten). Ist-Verspätung aus `delay` (Sekunden).
 - **Auflösung:** Die Schnittstelle liefert Verspätungen nur in ganzen Minuten. Schwellen unter 1 Minute sind daher nicht auswertbar.
+- **Startbahnhöfe** (Wedel, Poppenbüttel, Flughafen): Vor der Abfahrt steht dort praktisch immer „pünktlich“; Abweichungen werden erst nach der Abfahrt bekannt (Beispiel: S1 7:28 ab Poppenbüttel am 27.10., +5 min erst ab Hoheneichen gemeldet). Ab 27.10. fragt der Sammler deshalb auch die letzten 10 Minuten ab, um nachträglich korrigierte Abfahrtszeiten zu erfassen.
 - **Zu frühe Abfahrten** sind in den Daten nicht sichtbar: Unter den ersten 55.000 Beobachtungen ist keine einzige negative Verspätung. Frühabfahrten lassen sich nur über eigene Stichproben belegen.
 - **Geflügelte Züge** erscheinen an Stationen vor Ohlsdorf zweimal (Ziel Flughafen und Ziel Poppenbüttel); in der Auswertung zählen sie als ein Zug.
 - **Speicherung:** nur Änderungen je Fahrt und Station, mit vollständigem Rohdatensatz; jede Abfrage im
