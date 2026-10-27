@@ -1,6 +1,6 @@
 # Ergebnisse Stufe 1: Fahrplan-Analysen
 
-Automatisch erzeugt am 26.10.2026 aus dem hvv-Soll-Fahrplan (gültig 20261002–20261212, Prüfsumme 2618dc1589da). **Alle Zahlen sind Plan-Werte ohne Verspätungen.** Was davon in der Realität ankommt, zeigt erst die Echtzeit-Erhebung ab Stufe 2.
+Automatisch erzeugt am 27.10.2026 aus dem hvv-Soll-Fahrplan (gültig 20261002–20261212, Prüfsumme 2618dc1589da). **Alle Zahlen sind Plan-Werte ohne Verspätungen.** Was davon in der Realität ankommt, zeigt erst die Echtzeit-Erhebung ab Stufe 2.
 
 Untersuchte Stichtage (typischer Fahrplan, kein Feiertag oder Sonderfahrplan): Werktag = Dienstag, 03.11.2026, Samstag = Samstag, 07.11.2026, Sonntag = Sonntag, 08.11.2026.
 
