@@ -6,7 +6,7 @@ transparent und nachvollziehbar auswertet.
 
 **Status:** Stufe 1 (Fahrplan-Analysen) läuft. Stufe 2 (Echtzeit-Sammler) ist bereit; die schriftliche
 Zustimmung der Hochbahn liegt seit 26.10.2026 vor ([sammler/README.md](sammler/README.md)).
-**Aktuelle Ergebnisse:** [analysen/ERGEBNISSE_STUFE1.md](analysen/ERGEBNISSE_STUFE1.md)
+**Aktuelle Ergebnisse:** [analysen/ERGEBNISSE_STUFE1.md](analysen/ERGEBNISSE_STUFE1.md) (Fahrplan); interaktives Dashboard im Probebetrieb (Quelle: `dashboard/`, Kennzahlen: `auswertung/aggregieren.py`)
 
 ## Was das Projekt beantworten soll
 
@@ -43,7 +43,8 @@ aufbereitung/        Aufbereitung mit DuckDB
 analysen/            Auswertungen zu den Fragen F1–F12
 ergebnisse/          aufbereitete Tabellen (klein, versioniert)
 sammler/             Echtzeit-Sammler (ab Stufe 2)
-dashboard/           Website (ab Stufe 5)
+dashboard/           Dashboard-Website (GitHub Pages, nur aggregierte Werte)
+auswertung/          Aggregation der Kennzahlen für das Dashboard
 tests/               automatische Prüfungen
 docs/METHODIK.md     Definitionen und Änderungsprotokoll
 ```

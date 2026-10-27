@@ -1,0 +1,82 @@
+name: Dashboard aktualisieren
+
+# Berechnet alle 6 Stunden die aggregierten Kennzahlen aus der privaten Endstand-Tabelle und
+# veröffentlicht das Dashboard über GitHub Pages. Es werden nur Zählungen veröffentlicht, keine Rohdaten.
+# Voraussetzung (einmalig): Settings → Pages → Source: „GitHub Actions“.
+on:
+  schedule:
+    - cron: "41 1,7,13,19 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "dashboard/**"
+      - "auswertung/**"
+      - ".github/workflows/dashboard.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  bauen:
+    if: vars.SAMMLER_AKTIV == 'ja'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Abhängigkeiten installieren
+        run: pip install -r requirements.txt
+
+      - name: Endstand-Tabelle holen (nur lesen, privat)
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ vars.DATEN_REPO }}
+          token: ${{ secrets.DATEN_TOKEN }}
+          path: daten
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /endstand/
+
+      - name: Kennzahlen berechnen
+        id: kennzahlen
+        run: |
+          if ! ls daten/endstand/*/*.parquet > /dev/null 2>&1; then
+            echo "::notice title=Dashboard::Noch keine Endstand-Tabelle vorhanden, nichts zu veröffentlichen."
+            echo "bereit=nein" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mkdir -p site
+          python auswertung/aggregieren.py --endstand daten/endstand --ausgabe site/daten
+          cp dashboard/index.html site/
+          echo "bereit=ja" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.kennzahlen.outputs.bereit == 'ja'
+        with:
+          path: site
+    outputs:
+      bereit: ${{ steps.kennzahlen.outputs.bereit }}
+
+  veroeffentlichen:
+    needs: bauen
+    if: needs.bauen.outputs.bereit == 'ja'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

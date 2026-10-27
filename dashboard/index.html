@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>S1-Monitor Hamburg</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f9f9f7; --flaeche: #fcfcfb; --rand: #e4e3df; --text: #0b0b0b; --leise: #52514e;
+    --s1: #2a78d6; --s2: #eb6834; --raster: #ecebe7; --hinweis-bg: #fff4dd; --hinweis-rand: #eda100;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d0d0d; --flaeche: #1a1a19; --rand: #383835; --text: #f0efec; --leise: #c3c2b7;
+      --s1: #3987e5; --s2: #d95926; --raster: #2a2a28; --hinweis-bg: #2b2414; --hinweis-rand: #c98500;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 24px; margin: 8px 0 2px; }
+  h2 { font-size: 17px; margin: 0 0 4px; }
+  .unter { color: var(--leise); margin: 0 0 12px; }
+  .hinweis { background: var(--hinweis-bg); border: 1px solid var(--hinweis-rand); border-radius: 8px;
+             padding: 10px 12px; margin: 12px 0; font-size: 14px; }
+  .filter { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; background: var(--flaeche);
+            border: 1px solid var(--rand); border-radius: 10px; padding: 12px; margin: 12px 0;
+            position: sticky; top: 0; z-index: 5; }
+  .filter label { display: flex; gap: 6px; align-items: center; font-size: 14px; }
+  select, input[type=range] { font: inherit; }
+  select { padding: 4px 6px; border-radius: 6px; border: 1px solid var(--rand); background: var(--flaeche); color: var(--text); }
+  .kacheln { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 12px 0; }
+  .kachel { background: var(--flaeche); border: 1px solid var(--rand); border-radius: 10px; padding: 12px; }
+  .kachel .wert { font-size: 28px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .kachel .name { color: var(--leise); font-size: 13px; }
+  .karte { background: var(--flaeche); border: 1px solid var(--rand); border-radius: 10px; padding: 14px; margin: 12px 0; }
+  .karte p.erk { color: var(--leise); font-size: 13px; margin: 0 0 10px; }
+  .diagramm { position: relative; height: 280px; }
+  .diagramm.hoch { height: 620px; }
+  .zwei { display: grid; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--rand); }
+  footer { color: var(--leise); font-size: 13px; margin: 24px 0; }
+  a { color: var(--s1); }
+  .klein { font-size: 13px; color: var(--leise); }
+  .fazit { font-size: 15px; margin: 6px 0 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>S1-Monitor Hamburg</h1>
+  <p class="unter">Wie pünktlich ist die S1 wirklich? Unabhängige Auswertung der offiziellen Echtzeitdaten.</p>
+
+  <div class="hinweis" id="banner">Probebetrieb. Daten werden noch gesammelt.</div>
+
+  <div class="filter" role="group" aria-label="Filter">
+    <label>Pünktlich bei weniger als
+      <input type="range" id="schwelle" min="1" max="10" value="3" aria-label="Schwelle in Minuten">
+      <b id="schwelle-text">3 min</b> Verspätung</label>
+    <label><input type="checkbox" id="ausfaelle" checked> Ausfälle zählen als unpünktlich</label>
+    <label>Zeitraum <select id="zeitraum">
+      <option value="7">letzte 7 Tage</option><option value="28">letzte 28 Tage</option>
+      <option value="alle" selected>gesamt</option></select></label>
+    <label>Tageszeit <select id="tageszeit">
+      <option value="alle">ganzer Tag</option><option value="morgens">morgens 6–9 Uhr</option>
+      <option value="tagsueber">tagsüber 9–16 Uhr</option><option value="abends">abends 16–19 Uhr</option>
+      <option value="spaetabends">spätabends 19–24 Uhr</option><option value="nacht">nachts/früh 0–6 Uhr</option>
+    </select></label>
+    <label>Richtung <select id="richtung">
+      <option value="beide">beide</option><option value="west">Richtung Innenstadt / Wedel</option>
+      <option value="ost">Richtung Ohlsdorf / Poppenbüttel / Flughafen</option></select></label>
+  </div>
+
+  <div class="kacheln">
+    <div class="kachel"><div class="wert" id="k-eigen">–</div><div class="name" id="k-eigen-name">pünktlich</div></div>
+    <div class="kachel"><div class="wert" id="k-sbahn">–</div><div class="name">nach S-Bahn-Definition<br>(unter 6 min, ohne Ausfälle)</div></div>
+    <div class="kachel"><div class="wert" id="k-ausfall">–</div><div class="name">Ausfälle</div></div>
+    <div class="kachel"><div class="wert" id="k-mittel">–</div><div class="name">Ø Verspätung</div></div>
+    <div class="kachel"><div class="wert" id="k-n">–</div><div class="name">gezählte Abfahrten</div></div>
+  </div>
+
+  <section class="karte">
+    <h2>Pünktlichkeit je Tag</h2>
+    <p class="erk">Eigene Definition (oben eingestellt) im Vergleich zur Definition der S-Bahn.</p>
+    <div class="diagramm"><canvas id="c-tag" role="img" aria-label="Pünktlichkeit je Tag"></canvas></div>
+  </section>
+
+  <section class="karte">
+    <h2>Pünktlichkeit nach Uhrzeit</h2>
+    <p class="erk">Anteil pünktlicher Abfahrten je Stunde der Soll-Abfahrt.</p>
+    <div class="diagramm"><canvas id="c-stunde" role="img" aria-label="Pünktlichkeit nach Uhrzeit"></canvas></div>
+  </section>
+
+  <section class="karte">
+    <h2>Pünktlichkeit je Station</h2>
+    <p class="erk">In Streckenreihenfolge von Wedel bis Poppenbüttel und Flughafen. Startbahnhöfe sind ausgeklammert, weil dort vor der Abfahrt nie eine Verspätung gemeldet wird.</p>
+    <div class="diagramm hoch"><canvas id="c-station" role="img" aria-label="Pünktlichkeit je Station"></canvas></div>
+  </section>
+
+  <section class="karte">
+    <h2>Wo entsteht die Verspätung?</h2>
+    <p class="erk">Durchschnittlicher Verspätungszuwachs je Zug zwischen zwei benachbarten Halten, in Sekunden, getrennt nach Fahrtrichtung. Positive Werte: Hier verliert die S1 Zeit. Die Schnittstelle liefert nur ganze Minuten, einzelne Werte schwanken deshalb stark.</p>
+    <div class="diagramm hoch"><canvas id="c-abschnitt" role="img" aria-label="Verspätungszuwachs je Abschnitt"></canvas></div>
+  </section>
+
+  <div class="zwei">
+    <section class="karte">
+      <h2>Anzeige am Bahnsteig vs. Realität</h2>
+      <p class="erk">Vergleich der letzten Prognose vor der Abfahrt mit der tatsächlichen, nachträglich korrigierten Verspätung (gemessen seit 27.10.2026).</p>
+      <div class="kachel"><div class="wert" id="k-prognose">–</div><div class="name" id="k-prognose-name">der Abfahrten später als zuletzt angezeigt</div></div>
+      <p class="fazit" id="prognose-text"></p>
+    </section>
+    <section class="karte">
+      <h2>Pendelweg: Ankunft Poppenbüttel und Bus 176</h2>
+      <p class="erk">S1 Richtung Poppenbüttel, Ankunft geschätzt aus der Abfahrt in Wellingsbüttel plus Soll-Fahrzeit. Wartezeit bis zum nächsten tatsächlich abfahrenden 176er bei mindestens 3 Minuten Umsteigezeit.</p>
+      <div class="kacheln" style="margin:0 0 8px">
+        <div class="kachel"><div class="wert" id="k-popp">–</div><div class="name" id="k-popp-name">pünktlich in Poppenbüttel</div></div>
+        <div class="kachel"><div class="wert" id="k-176">–</div><div class="name">Ø Wartezeit auf den 176er</div></div>
+        <div class="kachel"><div class="wert" id="k-176-12">–</div><div class="name">warten 12 Minuten oder länger</div></div>
+      </div>
+      <div class="diagramm"><canvas id="c-176" role="img" aria-label="Verteilung der Wartezeit auf den Bus 176"></canvas></div>
+    </section>
+  </div>
+
+  <section class="karte">
+    <h2>Datenqualität</h2>
+    <p class="erk">Abdeckung: Anteil der Minuten, in denen jede Station mindestens einmal erfolgreich abgefragt wurde (schwächste Station und Mittel).</p>
+    <div style="overflow-x:auto"><table id="t-qualitaet"></table></div>
+  </section>
+
+  <footer>
+    <p id="stand"></p>
+    <p>Quelle der Echtzeitdaten: Geofox-Schnittstelle der Hamburger Hochbahn AG; Soll-Fahrplan: Hamburger Verkehrsverbund (hvv), Transparenzportal Hamburg, Datenlizenz Deutschland – Namensnennung 2.0. Veröffentlicht werden nur aggregierte Werte. Alle Angaben ohne Gewähr. Fahrplanauskunft: <a href="https://www.hvv.de">hvv.de</a>.</p>
+    <p>Privates, nicht-kommerzielles Projekt ohne Verbindung zu hvv, Hochbahn oder S-Bahn Hamburg. <a href="https://github.com/finngrz/s1-monitor/blob/main/docs/METHODIK.md">Methodik</a> · <a href="https://github.com/finngrz/s1-monitor">Quellcode</a></p>
+  </footer>
+</main>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const MITTE = [...Array(16).keys(), 18, 25, 35];       // Klassenmitten in Minuten (16–20, 21–30, >30)
+const STUNDE_ZU_ABSCHNITT = (h) => h < 4 ? "nachts" : h < 6 ? "frueh" : h < 9 ? "morgens" : h < 16 ? "tagsueber" : h < 19 ? "abends" : "spaetabends";
+const fmtP = (x) => isFinite(x) ? (x * 100).toLocaleString("de-DE", { maximumFractionDigits: 0 }) + " %" : "–";
+const fmtZ = (x) => isFinite(x) ? x.toLocaleString("de-DE") : "–";
+let D, diagramme = {};
+
+function einstellungen() {
+  return {
+    schwelle: +$("schwelle").value, ausfaelle: $("ausfaelle").checked, zeitraum: $("zeitraum").value,
+    tageszeit: $("tageszeit").value, richtung: $("richtung").value,
+  };
+}
+function tageszeitPasst(abschnitt, t) {
+  if (t === "alle") return true;
+  if (t === "nacht") return abschnitt === "nachts" || abschnitt === "frueh";
+  return abschnitt === t;
+}
+function datumGrenze(zeitraum) {
+  if (zeitraum === "alle") return "0000";
+  const letzter = new Date(D.meta.letzter_tag + "T12:00:00");
+  letzter.setDate(letzter.getDate() - (+zeitraum - 1));
+  return letzter.toISOString().slice(0, 10);
+}
+// Summiert Histogramme der Zeilen i, für die passt(i) gilt
+function summe(tab, passt) {
+  const h = new Array(D.meta.klassen.length).fill(0); let ausfall = 0, unbekannt = 0;
+  for (let i = 0; i < tab.hist.length; i++) {
+    if (!passt(i)) continue;
+    const r = tab.hist[i]; for (let k = 0; k < h.length; k++) h[k] += r[k];
+    ausfall += tab.ausfall[i]; unbekannt += tab.unbekannt[i];
+  }
+  return { h, ausfall, unbekannt };
+}
+function kennzahlen(s, e) {
+  const n = s.h.reduce((a, b) => a + b, 0);
+  const unter = (t) => s.h.slice(0, t).reduce((a, b) => a + b, 0);
+  const eigen = unter(e.schwelle) / (e.ausfaelle ? n + s.ausfall : n);
+  const sbahn = unter(6) / n;
+  const mittel = s.h.reduce((a, b, k) => a + b * MITTE[k], 0) / n;
+  return { n, eigen, sbahn, mittel, ausfallQuote: s.ausfall / (n + s.ausfall), ausfall: s.ausfall };
+}
+function filterTagStunde(e, grenze) {
+  const t = D.tag_stunde;
+  return (i) => t.datum[i] >= grenze && tageszeitPasst(STUNDE_ZU_ABSCHNITT(t.stunde[i]), e.tageszeit)
+    && (e.richtung === "beide" || t.richtung_gruppe[i] === e.richtung);
+}
+
+function diagramm(id, typ, labels, datensaetze, optionen = {}) {
+  const raster = css("--raster"), leise = css("--leise");
+  if (diagramme[id]) diagramme[id].destroy();
+  diagramme[id] = new Chart($(id), {
+    type: typ, data: { labels, datasets: datensaetze },
+    options: Object.assign({
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: { legend: { display: datensaetze.length > 1, labels: { color: leise, boxWidth: 12 } },
+                 tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${optionen.prozent === false ? fmtZ(Math.round(c.parsed.x ?? c.parsed.y)) : fmtP(c.parsed[optionen.indexAxis === "y" ? "x" : "y"])}` } } },
+      scales: {
+        x: { grid: { color: raster }, ticks: { color: leise } },
+        y: { grid: { color: raster }, ticks: { color: leise } },
+      },
+    }, optionen),
+  });
+}
+const prozentAchse = (achse) => ({ [achse]: { min: 0, max: 1, grid: { color: css("--raster") },
+  ticks: { color: css("--leise"), callback: (v) => Math.round(v * 100) + " %" } } });
+
+function zeichnen() {
+  const e = einstellungen();
+  $("schwelle-text").textContent = e.schwelle + " min";
+  const grenze = datumGrenze(e.zeitraum);
+  const s1 = css("--s1"), s2 = css("--s2");
+
+  // Kacheln
+  const k = kennzahlen(summe(D.tag_stunde, filterTagStunde(e, grenze)), e);
+  $("k-eigen").textContent = fmtP(k.eigen);
+  $("k-eigen-name").textContent = `pünktlich (unter ${e.schwelle} min${e.ausfaelle ? ", Ausfälle zählen mit" : ""})`;
+  $("k-sbahn").textContent = fmtP(k.sbahn);
+  $("k-ausfall").textContent = fmtP(k.ausfallQuote);
+  $("k-mittel").textContent = isFinite(k.mittel) ? k.mittel.toLocaleString("de-DE", { maximumFractionDigits: 1 }) + " min" : "–";
+  $("k-n").textContent = fmtZ(k.n + k.ausfall);
+
+  // Je Tag
+  const tage = [...new Set(D.tag_stunde.datum)].filter((d) => d >= grenze).sort();
+  const proTag = tage.map((d) => kennzahlen(summe(D.tag_stunde, (i) => D.tag_stunde.datum[i] === d && filterTagStunde(e, grenze)(i)), e));
+  diagramm("c-tag", "line", tage.map((d) => d.slice(8, 10) + "." + d.slice(5, 7) + "."), [
+    { label: `eigene Definition (unter ${e.schwelle} min)`, data: proTag.map((x) => x.eigen), borderColor: s1, backgroundColor: s1, borderWidth: 2, pointRadius: 4 },
+    { label: "S-Bahn-Definition", data: proTag.map((x) => x.sbahn), borderColor: s2, backgroundColor: s2, borderWidth: 2, pointRadius: 4 },
+  ], { scales: Object.assign({ x: { grid: { display: false }, ticks: { color: css("--leise") } } }, prozentAchse("y")) });
+
+  // Je Stunde
+  const stunden = [...Array(24).keys()];
+  const proStunde = stunden.map((h) => kennzahlen(summe(D.tag_stunde, (i) => D.tag_stunde.stunde[i] === h && D.tag_stunde.datum[i] >= grenze
+    && (e.richtung === "beide" || D.tag_stunde.richtung_gruppe[i] === e.richtung)), e));
+  diagramm("c-stunde", "bar", stunden.map((h) => h + " Uhr"), [
+    { label: `pünktlich (unter ${e.schwelle} min)`, data: proStunde.map((x) => x.n >= 20 ? x.eigen : null), backgroundColor: s1, borderRadius: 4 },
+  ], { scales: Object.assign({ x: { grid: { display: false }, ticks: { color: css("--leise") } } }, prozentAchse("y")) });
+
+  // Je Station
+  const st = D.station;
+  const stationen = D.meta.stationen.filter((n) => !D.meta.startbahnhoefe.includes(n));
+  const proStation = stationen.map((n) => kennzahlen(summe(st, (i) => st.abfrage_station[i] === n && st.datum[i] >= grenze
+    && tageszeitPasst(st.abschnitt[i], e.tageszeit) && (e.richtung === "beide" || st.richtung_gruppe[i] === e.richtung)), e));
+  diagramm("c-station", "bar", stationen, [
+    { label: `pünktlich (unter ${e.schwelle} min)`, data: proStation.map((x) => x.n >= 10 ? x.eigen : null), backgroundColor: s1, borderRadius: 4 },
+  ], { indexAxis: "y", scales: Object.assign({ y: { grid: { display: false }, ticks: { color: css("--leise"), autoSkip: false } } }, prozentAchse("x")) });
+
+  // Abschnitte: eine Zeile je Streckenabschnitt (in Streckenreihenfolge), ein Balken je Richtung
+  const ab = D.abschnitte, seg = {};
+  const pos = (n) => (n === "Hamburg Airport (Flughafen)" ? D.meta.stationen.indexOf("Ohlsdorf") + 0.5 : D.meta.stationen.indexOf(n));
+  for (let i = 0; i < ab.von.length; i++) {
+    if (ab.datum[i] < grenze || !tageszeitPasst(ab.abschnitt[i], e.tageszeit)) continue;
+    const [a, b] = pos(ab.von[i]) < pos(ab.nach[i]) ? [ab.von[i], ab.nach[i]] : [ab.nach[i], ab.von[i]];
+    const key = a + "|" + b;
+    seg[key] ??= { p: pos(a) + pos(b) / 100, name: a + " – " + b, ost: { n: 0, s: 0 }, west: { n: 0, s: 0 } };
+    seg[key][ab.richtung_gruppe[i]].n += ab.n[i]; seg[key][ab.richtung_gruppe[i]].s += ab.summe_s[i];
+  }
+  const liste = Object.values(seg).sort((x, y) => x.p - y.p);
+  const wert = (x, r) => (x[r].n >= 10 ? x[r].s / x[r].n : null);
+  const reihen = [];
+  if (e.richtung !== "west") reihen.push({ label: "Richtung Ohlsdorf / Poppenbüttel / Flughafen", data: liste.map((x) => wert(x, "ost")), backgroundColor: s1, borderRadius: 3 });
+  if (e.richtung !== "ost") reihen.push({ label: "Richtung Innenstadt / Wedel", data: liste.map((x) => wert(x, "west")), backgroundColor: s2, borderRadius: 3 });
+  diagramm("c-abschnitt", "bar", liste.map((x) => x.name), reihen, { indexAxis: "y", prozent: false,
+       scales: { y: { grid: { display: false }, ticks: { color: css("--leise"), autoSkip: false, font: { size: 11 } } },
+                 x: { grid: { color: css("--raster") }, ticks: { color: css("--leise") }, title: { display: true, text: "Sekunden je Zug (negativ = holt Zeit auf)", color: css("--leise") } } } });
+
+  // Prognose vs. Realität
+  const p = D.prognose; let pn = 0, ps = 0, ph = 0, ph2 = 0;
+  for (let i = 0; i < p.n.length; i++) {
+    if (p.datum[i] < grenze || !tageszeitPasst(p.abschnitt[i], e.tageszeit)) continue;
+    if (e.richtung !== "beide" && p.richtung_gruppe[i] !== e.richtung) continue;
+    pn += p.n[i]; ps += p.summe_diff_s[i]; ph += p.n_hoeher[i]; ph2 += p.n_hoeher_2[i];
+  }
+  $("k-prognose").textContent = fmtP(ph / pn);
+  $("prognose-text").textContent = pn ? `Im Schnitt lag die tatsächliche Verspätung ${Math.round(ps / pn)} Sekunden über der letzten Anzeige; bei ${fmtP(ph2 / pn)} um 2 Minuten oder mehr (${fmtZ(pn)} Abfahrten).` : "Noch keine Daten.";
+
+  // Pendelweg
+  const ap = D.pendel.ankunft_poppenbuettel;
+  const kp = kennzahlen(summe(ap, (i) => ap.datum[i] >= grenze && tageszeitPasst(STUNDE_ZU_ABSCHNITT(ap.stunde[i]), e.tageszeit)), e);
+  $("k-popp").textContent = fmtP(kp.eigen);
+  $("k-popp-name").textContent = `pünktlich in Poppenbüttel (unter ${e.schwelle} min)`;
+  const w = D.pendel.warten_176, wh = new Array(31).fill(0);
+  for (let i = 0; i < w.hist.length; i++) {
+    if (w.datum[i] < grenze || !tageszeitPasst(STUNDE_ZU_ABSCHNITT(w.stunde[i]), e.tageszeit)) continue;
+    w.hist[i].forEach((v, m) => (wh[m] += v));
+  }
+  const wn = wh.reduce((a, b) => a + b, 0);
+  $("k-176").textContent = wn ? (wh.reduce((a, b, m) => a + b * m, 0) / wn).toLocaleString("de-DE", { maximumFractionDigits: 1 }) + " min" : "–";
+  $("k-176-12").textContent = wn ? fmtP(wh.slice(12).reduce((a, b) => a + b, 0) / wn) : "–";
+  diagramm("c-176", "bar", wh.map((_, m) => m + (m === 30 ? "+" : "")), [
+    { label: "Ankünfte", data: wh.map((v) => (wn ? v / wn : 0)), backgroundColor: wh.map((_, m) => m >= 12 ? s2 : s1), borderRadius: 3 },
+  ], { plugins: { legend: { display: false }, tooltip: { callbacks: { title: (c) => c[0].label + " min warten", label: (c) => fmtP(c.parsed.y) + " der Ankünfte" } } },
+       scales: Object.assign({ x: { grid: { display: false }, ticks: { color: css("--leise") }, title: { display: true, text: "Minuten bis zur Abfahrt des 176ers", color: css("--leise") } } },
+                             { y: { grid: { color: css("--raster") }, ticks: { color: css("--leise"), callback: (v) => Math.round(v * 100) + " %" } } }) });
+}
+
+function qualitaet() {
+  const q = (D.qualitaet || []).slice(-14).reverse();
+  const kopf = "<tr><th>Tag</th><th>Abdeckung schwächste Station</th><th>Abdeckung Mittel</th><th>Lücken &gt; 5 min</th><th>Fehlerquote</th><th>Probleme</th></tr>";
+  $("t-qualitaet").innerHTML = kopf + (q.length ? q.map((r) => `<tr><td>${r.datum}</td><td>${fmtP(+r.abdeckung_min)}</td><td>${fmtP(+r.abdeckung_mittel)}</td><td>${r.luecken_ueber_5_min}</td><td>${(+r.fehlerquote * 100).toLocaleString("de-DE", { maximumFractionDigits: 1 })} %</td><td>${r.probleme || "–"}</td></tr>`).join("")
+    : "<tr><td colspan=6>Erster Prüfbericht folgt am nächsten Morgen.</td></tr>");
+}
+
+fetch("daten/kennzahlen.json", { cache: "no-store" }).then((r) => r.json()).then((daten) => {
+  D = daten;
+  const m = D.meta, fmtD = (d) => d.slice(8, 10) + "." + d.slice(5, 7) + "." + d.slice(0, 4);
+  $("banner").innerHTML = `<b>Probebetrieb:</b> Messung seit ${fmtD(m.erster_tag)}, bisher ${m.tage} Tag${m.tage === 1 ? "" : "e"} und ${fmtZ(m.abfahrten)} Abfahrten. Die Zahlen sind noch nicht belastbar und ändern sich mit jedem Tag. Bitte nicht zitieren.`;
+  $("stand").textContent = `Stand: ${new Date(m.erzeugt_utc).toLocaleString("de-DE")} · Daten bis ${fmtD(m.letzter_tag)}`;
+  qualitaet();
+  zeichnen();
+  ["schwelle", "ausfaelle", "zeitraum", "tageszeit", "richtung"].forEach((id) => $(id).addEventListener("input", zeichnen));
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", zeichnen);
+}).catch(() => { $("banner").textContent = "Die Daten konnten nicht geladen werden."; });
+</script>
+</body>
+</html>
