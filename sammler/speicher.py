@@ -26,8 +26,21 @@ BERLIN = ZoneInfo("Europe/Berlin")
 UTC = timezone.utc
 
 
+KENNUNG_LAENGE = 16  # 64 Bit reichen bei Millionen Zeilen; ältere Daten haben 40 Zeichen (Präfix ist identisch)
+
+
 def fingerabdruck(obj) -> str:
-    return hashlib.sha1(json.dumps(obj, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+    voll = hashlib.sha1(json.dumps(obj, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+    return voll[:KENNUNG_LAENGE]
+
+
+def kennungen_kuerzen(df: pd.DataFrame, art: str) -> pd.DataFrame:
+    """Bringt ältere 40-stellige Kennungen auf die heutige Länge (der Anfang ist identisch)."""
+    if "stand" in df:
+        df["stand"] = df["stand"].str[:KENNUNG_LAENGE]
+    if art == "abfahrten" and "schluessel" in df:
+        df["schluessel"] = df["schluessel"].str[:KENNUNG_LAENGE]
+    return df
 
 
 def gti_zeit(zeit: dict) -> datetime:
@@ -115,6 +128,7 @@ class Speicher:
                 continue
             df = pd.concat([pd.read_parquet(d, columns=["beobachtet_utc", "schluessel", "stand"]) for d in dateien])
             df = df.sort_values("beobachtet_utc").drop_duplicates("schluessel", keep="last")
+            df = kennungen_kuerzen(df, art)
             self.letzter_stand[art] = dict(zip(df.schluessel, df.stand))
 
     # ---------------------------------------------------------------- Aufnehmen

@@ -44,11 +44,13 @@ jobs:
       - name: Benötigte Tage bestimmen
         id: tage
         run: |
+          echo "vor3=$(TZ=Europe/Berlin date -d '3 days ago' +%F)" >> "$GITHUB_OUTPUT"
+          echo "vor2=$(TZ=Europe/Berlin date -d '2 days ago' +%F)" >> "$GITHUB_OUTPUT"
           echo "gestern=$(TZ=Europe/Berlin date -d yesterday +%F)" >> "$GITHUB_OUTPUT"
           echo "heute=$(TZ=Europe/Berlin date +%F)" >> "$GITHUB_OUTPUT"
           echo "morgen=$(TZ=Europe/Berlin date -d tomorrow +%F)" >> "$GITHUB_OUTPUT"
 
-      - name: Privates Daten-Repository holen (gestern bis morgen)
+      - name: Privates Daten-Repository holen (nur die letzten Tage)
         uses: actions/checkout@v5
         with:
           repository: ${{ vars.DATEN_REPO }}
@@ -59,18 +61,32 @@ jobs:
           sparse-checkout: |
             /stationen_geprueft.json
             /README.md
+            /*/${{ steps.tage.outputs.vor3 }}/
+            /*/${{ steps.tage.outputs.vor2 }}/
             /*/${{ steps.tage.outputs.gestern }}/
             /*/${{ steps.tage.outputs.heute }}/
             /*/${{ steps.tage.outputs.morgen }}/
+
+      - name: Git einrichten
+        run: |
+          git -C daten config user.name "s1-monitor-bot"
+          git -C daten config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Pflege (Tage zusammenfassen, Endstand, Monatsarchiv, Historie)
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.DATEN_TOKEN }}
+        run: |
+          if ! python sammler/pflege.py --daten daten --repo "${{ vars.DATEN_REPO }}"; then
+            echo "::error title=Pflege::Pflege fehlgeschlagen, Sammlung läuft trotzdem weiter."
+            exit 1
+          fi
 
       - name: Sammeln (Abschnitte von 28 Minuten, bis zu 5,5 Stunden)
         env:
           GTI_USER: ${{ secrets.GTI_USER }}
           GTI_PASS: ${{ secrets.GTI_PASS }}
         run: |
-          git -C daten config user.name "s1-monitor-bot"
-          git -C daten config user.email "github-actions[bot]@users.noreply.github.com"
-
           speichern() {
             git -C daten add --sparse -A
             if git -C daten diff --cached --quiet; then return 0; fi

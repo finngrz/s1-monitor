@@ -17,7 +17,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from speicher import BERLIN  # noqa: E402
+from speicher import BERLIN, kennungen_kuerzen  # noqa: E402
 
 
 def kompaktiere(daten: Path, heute) -> list[str]:
@@ -38,6 +38,7 @@ def kompaktiere(daten: Path, heute) -> list[str]:
             spalte = "beobachtet_utc" if "beobachtet_utc" in df else "zeit_utc"
             df = df.sort_values(spalte, kind="stable")
             vorher = sum(len(x) for x in alle)
+            df = kennungen_kuerzen(df, art)
             if "stand" in df:  # doppelt gespeicherte gleiche Stände (z. B. überlappende Läufe) entfernen
                 df = df[df.stand != df.groupby("schluessel").stand.shift()]
             tmp = ordner / "tag.parquet.tmp"

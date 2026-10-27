@@ -1,6 +1,6 @@
 # Methodik
 
-Version 0.4 · Stand 26.10.2026
+Version 0.5 · Stand 27.10.2026
 
 Grundsatz: Rohdaten werden unverändert gespeichert. Alle Definitionen werden erst bei der
 Auswertung angewendet und können daher geändert werden, ohne Daten zu verlieren. Jede
@@ -10,7 +10,7 @@ Auswertung angewendet und können daher geändert werden, ohne Daten zu verliere
 
 | Nr. | Begriff | Definition |
 | --- | --- | --- |
-| D1 | Ist-Verspätung | Letzte Prognose vor der Soll-Abfahrt; Variante: Prognose x Minuten vorher |
+| D1 | Ist-Verspätung | Letzter Stand der Schnittstelle einschließlich nachträglicher Korrekturen bis 10 Minuten nach der Abfahrt (ab 27.10.2026). Daneben gespeichert: die letzte Prognose vor der Abfahrt (was Fahrgäste sahen) |
 | D2 | Messpunkt | Abfahrt. Ankünfte liefert die Schnittstelle für unseren Zugang nicht; an Endstationen gilt die Abfahrt am vorletzten Halt plus Soll-Fahrzeit als Näherung |
 | D3 | Ausfall | Fahrt als ausgefallen gekennzeichnet |
 | D4 | Teilausfall | Ausfall ab einer bestimmten Station, z. B. Poppenbüttel-Teil ab Ohlsdorf |
@@ -64,10 +64,27 @@ Für alle weitergegebenen Zahlen gilt, sofern nicht anders angegeben:
 - **Speicherung:** nur Änderungen je Fahrt und Station, mit vollständigem Rohdatensatz; jede Abfrage im
   Protokoll. Rohdaten in einem privaten Repository, nie veröffentlicht.
 
+## Endstand-Tabelle
+
+Für jeden abgeschlossenen Tag entsteht eine Tabelle mit einer Zeile pro beobachteter Abfahrt (Station,
+Linie, Richtung, Soll-Zeit): letzter Stand (D1), letzte Prognose vor der Abfahrt, Ausfall, Gründe aus
+`REALTIME_REASON`, Zahl der Beobachtungen. Sie ist die Grundlage aller Statistiken und bleibt dauerhaft
+im privaten Repository; die Rohdaten jedes Monats liegen als geprüftes Archiv (SHA-256) in den Releases.
+
+**Befund 27.10.2026:** Bei 116 von 196 abgefahrenen S1-Abfahrten änderte sich die Verspätung nach der
+Abfahrt noch, meist um +1 bis +2 Minuten (Mittel +81 Sekunden, maximal +4 Minuten). Die letzte Prognose
+vor der Abfahrt unterschätzt die tatsächliche Verspätung also systematisch. Negative Verspätungen
+(Frühabfahrten) liefert die Schnittstelle weiterhin nicht.
+
+**Offener Punkt:** Rund 13 % der S1-Soll-Zeiten aus der Schnittstelle finden sich nicht im
+Open-Data-Fahrplan (z. B. zusätzliche Abfahrten Richtung Wedel um :05/:15). Das bestand schon vor dem
+Rückblick und wird in Stufe 3 geklärt (abweichende Fahrplanversion, Zusatzfahrten oder Baufahrplan).
+
 ## Änderungsprotokoll
 
 | Datum | Version | Änderung |
 | --- | --- | --- |
+| 27.10.2026 | 0.5 | D1 neu: letzter Stand inkl. Korrekturen nach der Abfahrt; Endstand-Tabelle; Monatsarchive |
 | 27.10.2026 | 0.4 | Hinweis: Frühabfahrten in den Daten nicht sichtbar |
 | 26.10.2026 | 0.4 | Erste Echtzeitdaten: Ankünfte nicht verfügbar (D2 angepasst), Minuten-Auflösung, geflügelte Züge |
 | 26.10.2026 | 0.3 | Schriftliche Zustimmung der Hochbahn zur statistischen Nutzung liegt vor (keine Methodikänderung) |

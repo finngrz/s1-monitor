@@ -31,13 +31,36 @@ ausschließlich Auswertungen.
 
 ```
 s1-monitor-daten/
-├── abfahrten/JJJJ-MM-TT/…parquet    Änderungen je Fahrt und Station
-├── meldungen/JJJJ-MM-TT/…parquet    Störungsmeldungen
-├── protokoll/JJJJ-MM-TT/…parquet    jede einzelne Abfrage
-└── stationen_geprueft.json          überprüfte Stations-IDs
+├── abfahrten/JJJJ-MM-TT/…parquet    Änderungen je Fahrt und Station (laufender Monat)
+├── meldungen/JJJJ-MM-TT/…parquet    Störungsmeldungen (laufender Monat)
+├── protokoll/JJJJ-MM-TT/…parquet    jede einzelne Abfrage (laufender Monat)
+├── endstand/JJJJ-MM/JJJJ-MM-TT.parquet   eine Zeile pro Abfahrt: Grundlage aller Statistiken (dauerhaft)
+├── stationen_geprueft.json          überprüfte Stations-IDs
+└── Releases: rohdaten-JJJJ-MM       Monatsarchive der Rohdaten mit Prüfsummen (dauerhaft)
 ```
 
-Jede Nacht werden die vielen kleinen Dateien des Vortags zu einer `tag.parquet` zusammengefasst.
+## Betrieb ohne Eingriffe
+
+| Was | Wann | Wo |
+| --- | --- | --- |
+| Sammeln | rund um die Uhr, Kette von 5,5-Stunden-Läufen | `sammler.yml` |
+| Pflege: Tage zusammenfassen, Endstand bauen, Monat archivieren, Git-Historie neu aufsetzen | zu Beginn jedes Sammel-Laufs, wenn etwas zu tun ist | `sammler/pflege.py` |
+| Gesundheits-Check, Datenqualität veröffentlichen | täglich 8:13 Uhr | `gesundheit.yml` |
+| Fahrplan holen, Fahrplan-Analysen | wöchentlich | `fahrplan.yml` |
+
+Der Sammel-Lauf ist der **einzige**, der ins Daten-Repository schreibt; dadurch gibt es keine
+Konflikte. Monatsarchive werden nach dem Hochladen erneut heruntergeladen und per Prüfsumme verglichen;
+erst dann werden die Rohdaten des Monats aus dem Repository entfernt. Die Git-Historie wird nach jeder
+Pflege durch einen einzigen Commit ersetzt, damit das Repository nicht unbegrenzt wächst.
+
+**Wenn etwas schiefgeht**, schlägt der Gesundheits-Check fehl und GitHub schickt eine E-Mail. Geprüft
+werden: Abdeckung je Station am Vortag (mindestens 95 % der Minuten), Lücken über 5 Minuten,
+Fehlerquote (höchstens 5 %), letzte erfolgreiche Abfrage (höchstens 90 Minuten alt) und ob die Pflege läuft.
+Die Kennzahlen stehen öffentlich in `ergebnisse/datenqualitaet.csv`.
+
+**Von Hand bleibt:** auf Warn-E-Mails reagieren; monatlich das neue Archiv unter Releases
+von `s1-monitor-daten` herunterladen und lokal sichern; den Zugangsschlüssel `DATEN_TOKEN` vor Ablauf
+erneuern (GitHub erinnert per E-Mail).
 
 ## Einmalig vorbereiten (kann schon jetzt passieren)
 

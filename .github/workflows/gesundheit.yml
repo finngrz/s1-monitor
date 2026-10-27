@@ -1,0 +1,73 @@
+name: Gesundheits-Check
+
+# Prüft jeden Morgen, ob die Echtzeit-Erhebung vollständig läuft. Bei Problemen schlägt der Lauf fehl
+# und GitHub schickt eine E-Mail. Zum Testen der E-Mail: "Run workflow" mit "Test-Fehler" anhaken.
+on:
+  schedule:
+    - cron: "13 7 * * *"
+  workflow_dispatch:
+    inputs:
+      test_fehler:
+        description: "Test-Fehler auslösen (prüft, ob die E-Mail ankommt)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gesundheit
+  cancel-in-progress: false
+
+jobs:
+  pruefen:
+    if: vars.SAMMLER_AKTIV == 'ja'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Abhängigkeiten installieren
+        run: pip install -r requirements.txt
+
+      - name: Benötigte Tage bestimmen
+        id: tage
+        run: |
+          echo "vor2=$(TZ=Europe/Berlin date -d '2 days ago' +%F)" >> "$GITHUB_OUTPUT"
+          echo "gestern=$(TZ=Europe/Berlin date -d yesterday +%F)" >> "$GITHUB_OUTPUT"
+          echo "heute=$(TZ=Europe/Berlin date +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Abfrageprotokoll holen (nur lesen)
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ vars.DATEN_REPO }}
+          token: ${{ secrets.DATEN_TOKEN }}
+          path: daten
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /protokoll/${{ steps.tage.outputs.vor2 }}/
+            /endstand/*/${{ steps.tage.outputs.vor2 }}.parquet
+            /protokoll/${{ steps.tage.outputs.gestern }}/
+            /protokoll/${{ steps.tage.outputs.heute }}/
+
+      - name: Prüfen
+        id: pruefen
+        run: |
+          python sammler/gesundheit.py --daten daten --ausgabe ergebnisse/datenqualitaet.csv \
+            ${{ inputs.test_fehler && '--test-fehler' || '' }}
+
+      - name: Kennzahlen speichern
+        if: always() && !inputs.test_fehler
+        run: |
+          git config user.name "s1-monitor-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ergebnisse/datenqualitaet.csv
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -q -m "Datenqualität aktualisiert"
+          git pull -q --rebase && git push -q

@@ -159,7 +159,8 @@ def main() -> int:
     abstand = max(cfg["zyklus_s"] / max(len(aufgaben), 1), 1.0 / cfg["max_abfragen_pro_s"])
     ende = time.monotonic() + args.dauer_min * 60
     naechste_meldung = time.monotonic()
-    naechstes_schreiben = time.monotonic() + SCHREIB_INTERVALL_S
+    schreib_intervall = cfg.get("schreib_intervall_s", SCHREIB_INTERVALL_S)
+    naechstes_schreiben = time.monotonic() + schreib_intervall
     fehler_in_folge = 0
     abgebrochen = meldungen_aus = ankuenfte_aus = False
     print(f"Lauf {lauf_id}: {len(stationen)} Stationen, {len(aufgaben)} Abfragen je Runde, "
@@ -215,7 +216,7 @@ def main() -> int:
 
         if time.monotonic() >= naechstes_schreiben:
             speicher.schreibe()
-            naechstes_schreiben = time.monotonic() + SCHREIB_INTERVALL_S
+            naechstes_schreiben = time.monotonic() + schreib_intervall
 
         takt += abstand
         time.sleep(max(0.0, takt - time.monotonic()))
