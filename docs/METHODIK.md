@@ -10,7 +10,7 @@ Auswertung angewendet und können daher geändert werden, ohne Daten zu verliere
 
 | Nr. | Begriff | Definition |
 | --- | --- | --- |
-| D1 | Ist-Verspätung | Letzter Stand der Schnittstelle einschließlich nachträglicher Korrekturen bis 10 Minuten nach der Abfahrt (ab 27.10.2026). Daneben gespeichert: die letzte Prognose vor der Abfahrt (was Fahrgäste sahen) |
+| D1 | Ist-Verspätung | Letzter Stand der Schnittstelle einschließlich nachträglicher Korrekturen bis 10 Minuten (ab 27.10.2026) bzw. 30 Minuten (ab 02.11.2026) nach der Abfahrt. Daneben gespeichert: die letzte Prognose vor der Abfahrt (was Fahrgäste sahen) |
 | D2 | Messpunkt | Abfahrt. Ankünfte liefert die Schnittstelle für unseren Zugang nicht; an Endstationen gilt die Abfahrt am vorletzten Halt plus Soll-Fahrzeit als Näherung |
 | D3 | Ausfall | Fahrt als ausgefallen gekennzeichnet |
 | D4 | Teilausfall | Ausfall ab einer bestimmten Station, z. B. Poppenbüttel-Teil ab Ohlsdorf |
@@ -58,7 +58,7 @@ Für alle weitergegebenen Zahlen gilt, sofern nicht anders angegeben:
 - **Takt:** jede Station etwa einmal pro Minute, höchstens 0,8 Abfragen pro Sekunde, gleichmäßig verteilt.
 - **Soll-Zeit:** Bezugszeit der Antwort plus `timeOffset` (Minuten). Ist-Verspätung aus `delay` (Sekunden).
 - **Auflösung:** Die Schnittstelle liefert Verspätungen nur in ganzen Minuten. Schwellen unter 1 Minute sind daher nicht auswertbar.
-- **Startbahnhöfe** (Wedel, Poppenbüttel, Flughafen): Vor der Abfahrt steht dort praktisch immer „pünktlich“; Abweichungen werden erst nach der Abfahrt bekannt (Beispiel: S1 7:28 ab Poppenbüttel am 27.10., +5 min erst ab Hoheneichen gemeldet). Ab 27.10. fragt der Sammler deshalb auch die letzten 10 Minuten ab, um nachträglich korrigierte Abfahrtszeiten zu erfassen.
+- **Startbahnhöfe** (Wedel, Poppenbüttel, Flughafen): Vor der Abfahrt steht dort praktisch immer „pünktlich“; Abweichungen werden erst nach der Abfahrt bekannt (Beispiel: S1 7:28 ab Poppenbüttel am 27.10., +5 min erst ab Hoheneichen gemeldet). Ab 27.10. fragt der Sammler deshalb auch die letzten 10 Minuten ab (ab 02.11.: 30 Minuten), um nachträglich korrigierte Abfahrtszeiten zu erfassen.
 - **Zu frühe Abfahrten** sind in den Daten nicht sichtbar: Unter den ersten 55.000 Beobachtungen ist keine einzige negative Verspätung. Frühabfahrten lassen sich nur über eigene Stichproben belegen.
 - **Geflügelte Züge** erscheinen an Stationen vor Ohlsdorf zweimal (Ziel Flughafen und Ziel Poppenbüttel); in der Auswertung zählen sie als ein Zug.
 - **Speicherung:** nur Änderungen je Fahrt und Station, mit vollständigem Rohdatensatz; jede Abfrage im
@@ -86,7 +86,18 @@ berechnet; Version 1 enthielt Doppelzählungen.
 Abfahrt und danach keinen Verspätungswert (27.10.: 11 %, 29.10.–01.11.: 36–45 %). Diese Abfahrten zählen
 als „ohne Echtzeit“ und gehen weder als pünktlich noch als verspätet in die Quoten ein; ihr Anteil wird
 mit ausgewiesen. Ursache offen (fehlende Echtzeit im Datenfeed oder nicht verkehrende Fahrten). Ab
-02.11. zählt der Sammler je Abfrage, wie viele S1-Züge der nächsten 20 Minuten ohne Wert geliefert werden.
+02.11. zählt der Sammler je Abfrage, wie viele S1-Züge der nächsten 20 Minuten ohne Wert geliefert werden
+(Tageswert in `ergebnisse/datenqualitaet.csv`, Spalte `s1_ohne_echtzeit`).
+
+**Analyse 02.11.2026:** Am Sammler liegt es nicht: Jede Station wurde lückenlos alle 60 Sekunden
+abgefragt, und jede vom Sammler gemeldete Änderung ist gespeichert (Protokoll und Rohdaten stimmen
+zeilengenau überein). Der Anteil ohne Wert springt am 28.10. gegen Mittag von 0–20 % auf 50–65 % je Stunde,
+ohne Änderung an unserem Code; am Morgen des 02.11. sinkt er auf 10–35 %. Zerlegung (29.10.–01.11.,
+je Station und Zug): rund 13 Prozentpunkte entfallen auf Züge, deren Echtzeit erst unterwegs einsetzt
+(Beispiel: S1 ab Flughafen 0:12 am 29.10., erste Echtzeit um 0:32 für alle folgenden Stationen; die
+bereits passierten Halte bekommen keinen Wert mehr), rund 5 Punkte auf Lücken mitten in der Fahrt,
+rund 16 Punkte auf Züge ganz ohne Echtzeit. Gegenmaßnahme ab 02.11.: Der Rückblick wird von 10 auf 30
+Minuten verlängert, damit nachträglich gelieferte Werte für bereits passierte Halte noch erfasst werden.
 
 **Offener Punkt:** Rund 13 % der S1-Soll-Zeiten aus der Schnittstelle finden sich nicht im
 Open-Data-Fahrplan (z. B. zusätzliche Abfahrten Richtung Wedel um :05/:15). Das bestand schon vor dem
@@ -96,6 +107,7 @@ Rückblick und wird in Stufe 3 geklärt (abweichende Fahrplanversion, Zusatzfahr
 
 | Datum | Version | Änderung |
 | --- | --- | --- |
+| 02.11.2026 | 0.6 | Rückblick 30 statt 10 Minuten (D1); Analyse fehlender Echtzeit |
 | 02.11.2026 | 0.6 | Fahrt-Identität ohne `serviceId` (Endstand v2, neu berechnet); Abfahrten ohne Echtzeit getrennt ausgewiesen |
 | 27.10.2026 | 0.5 | D1 neu: letzter Stand inkl. Korrekturen nach der Abfahrt; Endstand-Tabelle; Monatsarchive |
 | 27.10.2026 | 0.4 | Hinweis: Frühabfahrten in den Daten nicht sichtbar |

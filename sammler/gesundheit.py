@@ -63,6 +63,9 @@ def pruefe(protokoll: pd.DataFrame, tag, jetzt_utc: datetime, stationen: int) ->
         "abdeckung_min": round(float(abdeckung.min()), 4) if abdeckung.size else 0.0,
         "abdeckung_mittel": round(float(abdeckung.mean()), 4) if abdeckung.size else 0.0,
         "luecken_ueber_5_min": luecken,
+        # Anteil der S1-Züge der nächsten 20 Minuten, die ohne Echtzeitangabe geliefert wurden (ab 02.11.)
+        "s1_ohne_echtzeit": (round(float(g_ok["s1_20_ohne"].sum() / g_ok["s1_20"].sum()), 4)
+                             if "s1_20" in g_ok and g_ok["s1_20"].sum() > 0 else None),
         "geprueft_utc": jetzt_utc.isoformat(timespec="seconds"),
     }
     if fehlende:
