@@ -90,8 +90,10 @@ def vorbereiten(endstand: pd.DataFrame, reihenfolge: list[str]) -> pd.DataFrame:
     s["richtung_gruppe"] = richtung_bestimmen(s, reihenfolge)
     s = s[s["richtung_gruppe"].notna()]
     s["ausfall"] = s["ausfall"].fillna(False).astype(bool)
-    # Geflügelte Züge (Flughafen- und Poppenbüttel-Teil) stehen doppelt im Datenstrom: einmal zählen
-    s = s.sort_values(["soll_utc", "abfrage_station"]).drop_duplicates(["abfrage_station", "soll_utc", "gleis", "richtung_gruppe"])
+    # Ein Zug je Station, Soll-Zeit und Richtung (geflügelte Züge und wechselnde serviceIds einmal zählen).
+    # Bei älteren Endständen bevorzugt den Eintrag mit bekannter Verspätung.
+    s = (s.assign(_hat=s["verspaetung_s"].notna() | s["ausfall"]).sort_values(["_hat", "soll_utc"], ascending=[False, True])
+         .drop_duplicates(["abfrage_station", "soll_utc", "richtung_gruppe"]).drop(columns="_hat").sort_values("soll_utc"))
     return s
 
 

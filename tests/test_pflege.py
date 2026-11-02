@@ -156,3 +156,26 @@ def test_archiv_wird_nicht_geloescht_bei_falscher_pruefsumme(tmp_path):
     except RuntimeError as f:
         assert "Prüfsumme" in str(f)
     assert (daten / "abfahrten" / "2026-09-30" / "tag.parquet").exists()  # nichts gelöscht
+
+
+def test_endstand_wechselnde_kennung_und_fluegelung():
+    """Gleicher Zug unter wechselnden serviceIds, später ohne Verspätungswert, plus geflügelter Zugteil."""
+    t = datetime(2026, 11, 2, 8, 0, tzinfo=BERLIN)
+    def ab(offset, delay, service, ziel="Poppenbüttel"):
+        d = abfahrt(offset, delay=delay, service=service)
+        d["line"]["direction"] = ziel
+        if delay is None:
+            del d["delay"]
+        return d
+    zeilen = [
+        abfahrt_zu_zeile(ab(17, 0, 7035), t, "Blankenese", "ab", t),
+        abfahrt_zu_zeile(ab(17, 0, 7035, ziel="Hamburg Airport (Flughafen)"), t, "Blankenese", "ab", t),  # Flügelzug
+        abfahrt_zu_zeile(ab(-11, 480, 6590), t + timedelta(minutes=28), "Blankenese", "ab", t + timedelta(minutes=28)),
+        abfahrt_zu_zeile(ab(-12, None, 6590), t + timedelta(minutes=29), "Blankenese", "ab", t + timedelta(minutes=29)),
+    ]
+    e = pflege.endstand_tag(pd.DataFrame(zeilen), date(2026, 11, 2))
+    assert len(e) == 1  # ein Zug
+    z = e.iloc[0]
+    assert z.richtung_gruppe == "ost"
+    assert z.verspaetung_s == 480  # letzter bekannter Wert, nicht der spätere fehlende
+    assert z.kennungen == 2 and z.endstand_version == pflege.ENDSTAND_VERSION

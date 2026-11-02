@@ -29,6 +29,7 @@ import tempfile
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 HIER = Path(__file__).resolve().parent
@@ -90,60 +91,116 @@ def gruende(roh: str) -> list[str]:
     return [a.get("value") for a in attribute if "REALTIME_REASON" in (a.get("types") or []) and a.get("value")]
 
 
-def endstand_tag(beobachtungen: pd.DataFrame, tag: date) -> pd.DataFrame:
-    """Eine Zeile pro Abfahrt mit Soll-Datum `tag` (Berliner Zeit)."""
+ENDSTAND_VERSION = 2  # 2: Züge über Station, Linie, Soll-Zeit und Richtung erkannt (serviceId wechselt)
+
+
+def stationsreihenfolge() -> list[str]:
+    cfg = json.loads((HIER / "konfig.json").read_text(encoding="utf-8"))
+    return [s["name"] for s in cfg["stationen"]]
+
+
+def richtung_gruppe(df: pd.DataFrame, reihenfolge: list[str]) -> pd.Series:
+    """S-Bahn: 'west'/'ost' aus Lage von Station und Ziel entlang der Strecke. Sonst: das Ziel selbst."""
+    idx = {n: i for i, n in enumerate(reihenfolge)}
+    ziel = df["richtung"].fillna("").str.split(" / ").str[0]
+    zi, hi = ziel.map(idx), df["abfrage_station"].map(idx)
+    rg = pd.Series(np.where(zi < hi, "west", np.where(zi > hi, "ost", "")), index=df.index)
+    bahn = df["verkehrsmittel"].eq("TRAIN") & zi.notna() & hi.notna() & rg.ne("")
+    return rg.where(bahn, "ziel:" + df["richtung"].fillna(""))
+
+
+def endstand_tag(beobachtungen: pd.DataFrame, tag: date, reihenfolge: list[str] | None = None) -> pd.DataFrame:
+    """Eine Zeile pro Abfahrt mit Soll-Datum `tag` (Berliner Zeit).
+
+    Ein Zug wird über Station, Linie, Soll-Zeit und Richtung erkannt, nicht über die serviceId, weil die
+    Schnittstelle für denselben Zug wechselnde serviceIds liefert. Geflügelte Züge (gleiche Zeit, gleiche
+    Richtung) zählen dadurch als ein Zug.
+    """
     df = kennungen_kuerzen(beobachtungen.copy(), "abfahrten")
-    df["beobachtet_utc"] = pd.to_datetime(df["beobachtet_utc"], utc=True)
-    df["soll_utc"] = pd.to_datetime(df["soll_utc"], utc=True)
-    df = df[df["soll_utc"].dt.tz_convert(BERLIN).dt.date == tag]
     if df.empty:
         return pd.DataFrame()
+    df["beobachtet_utc"] = pd.to_datetime(df["beobachtet_utc"], utc=True)
+    df["soll_utc"] = pd.to_datetime(df["soll_utc"], utc=True)
+    df = df[df["soll_utc"].dt.tz_convert(BERLIN).dt.date == tag].copy()
+    if df.empty:
+        return pd.DataFrame()
+    df["richtung_gruppe"] = richtung_gruppe(df, reihenfolge or stationsreihenfolge())
+    df["fahrt"] = pd.util.hash_pandas_object(
+        df[["abfrage_station", "linie", "soll_utc", "richtung_gruppe"]], index=False).astype("uint64").map("{:016x}".format)
     df = df.sort_values("beobachtet_utc", kind="stable")
-    df["ist_utc"] = df["soll_utc"] + pd.to_timedelta(df["verspaetung_s"].fillna(0), unit="s")
+    df["ausfall"] = df["ausfall"].fillna(False).astype(bool)
 
-    letzte = df.drop_duplicates("schluessel", keep="last").set_index("schluessel")
-    vor = df[df["beobachtet_utc"] <= df["ist_utc"]].drop_duplicates("schluessel", keep="last").set_index("schluessel")
-    zaehl = df.groupby("schluessel").agg(beobachtungen=("stand", "size"), erste_beobachtung_utc=("beobachtet_utc", "min"))
-    g = df[["schluessel", "roh"]].copy()
+    letzte = df.drop_duplicates("fahrt", keep="last").set_index("fahrt")
+    mit_wert = df[df["verspaetung_s"].notna()]
+    letzter_wert = mit_wert.drop_duplicates("fahrt", keep="last").set_index("fahrt")
+    vor = mit_wert[mit_wert["beobachtet_utc"] <= mit_wert["soll_utc"] + pd.to_timedelta(mit_wert["verspaetung_s"], unit="s")]
+    vor = vor.drop_duplicates("fahrt", keep="last").set_index("fahrt")
+    zaehl = df.groupby("fahrt").agg(beobachtungen=("stand", "size"), erste_beobachtung_utc=("beobachtet_utc", "min"),
+                                    kennungen=("service_id", "nunique"))
+    ziele = df.groupby("fahrt")["richtung"].agg(lambda x: " | ".join(dict.fromkeys(x.dropna())))
+    g = df[["fahrt", "roh"]].copy()
     g["g"] = g["roh"].map(gruende)
-    g = g.explode("g").dropna(subset=["g"]).drop_duplicates(["schluessel", "g"])
-    grund = g.groupby("schluessel")["g"].agg("; ".join)
+    g = g.explode("g").dropna(subset=["g"]).drop_duplicates(["fahrt", "g"])
+    grund = g.groupby("fahrt")["g"].agg("; ".join)
 
-    spalten = ["abfrage_station", "haltestelle_id", "haltestelle", "linie", "linie_id", "richtung_id", "richtung",
-               "verkehrsmittel", "service_id", "soll_utc", "verspaetung_s", "ausfall", "zusatzfahrt", "gleis",
-               "gleis_echtzeit"]
+    spalten = ["abfrage_station", "haltestelle_id", "haltestelle", "linie", "linie_id", "richtung_gruppe", "richtung",
+               "verkehrsmittel", "service_id", "soll_utc", "ausfall", "zusatzfahrt", "gleis", "gleis_echtzeit"]
     erg = letzte[[s for s in spalten if s in letzte]].copy()
+    erg["ziele"] = ziele.reindex(erg.index)
+    erg["verspaetung_s"] = letzter_wert["verspaetung_s"].reindex(erg.index)  # letzter bekannter Wert
     erg["letzte_beobachtung_utc"] = letzte["beobachtet_utc"]
     erg["prognose_vor_abfahrt_s"] = vor["verspaetung_s"].reindex(erg.index)
     erg["prognose_vor_abfahrt_utc"] = vor["beobachtet_utc"].reindex(erg.index)
-    erg["ausfall_vor_abfahrt"] = vor["ausfall"].reindex(erg.index)
     erg = erg.join(zaehl)
     erg["grund"] = grund.reindex(erg.index)
     erg.insert(0, "datum", tag.isoformat())
-    return erg.reset_index().sort_values(["soll_utc", "abfrage_station", "linie"], kind="stable")
+    erg["endstand_version"] = ENDSTAND_VERSION
+    return erg.reset_index().rename(columns={"fahrt": "schluessel"}).sort_values(
+        ["soll_utc", "abfrage_station", "linie"], kind="stable")
+
+
+def endstand_pfad(daten: Path, tag: str) -> Path:
+    return daten / "endstand" / tag[:7] / f"{tag}.parquet"
+
+
+def endstand_aktuell(daten: Path, tag: str) -> bool:
+    pfad = endstand_pfad(daten, tag)
+    sichtbar_machen(daten, [f"/endstand/{tag[:7]}/{tag}.parquet"])
+    if not pfad.exists():
+        return False
+    try:
+        v = pd.read_parquet(pfad, columns=["endstand_version"])["endstand_version"]
+        return bool(len(v)) and int(v.iloc[0]) >= ENDSTAND_VERSION
+    except Exception:  # ältere Datei ohne Versionsspalte
+        return False
 
 
 def endstaende_bauen(daten: Path, heute: date, jetzt_lokal: datetime) -> list[str]:
+    """Baut fehlende und veraltete Endstände für alle Tage, deren Rohdaten noch im Repository liegen."""
     tage = [date.fromisoformat(t) for t in ordner_im_repo(daten, "abfahrten")]
-    fertig = set()
+    vorhanden = set()
     for monat in ordner_im_repo(daten, "endstand"):
-        fertig |= {Path(n).stem for n in ordner_im_repo(daten, f"endstand/{monat}")}
+        vorhanden |= {Path(n).stem for n in ordner_im_repo(daten, f"endstand/{monat}")}
+    reihenfolge = stationsreihenfolge()
     erledigt = []
     for tag in tage:
         # Ein Tag ist abgeschlossen, wenn auch die Fahrten kurz vor Mitternacht beobachtet wurden.
         abgeschlossen = tag <= heute - timedelta(days=2) or (tag == heute - timedelta(days=1) and jetzt_lokal.hour >= 1)
-        if not abgeschlossen or tag.isoformat() in fertig:
+        if not abgeschlossen:
+            continue
+        if tag.isoformat() in vorhanden and endstand_aktuell(daten, tag.isoformat()):
             continue
         nachbarn = [(tag + timedelta(days=k)).isoformat() for k in (-1, 0, 1)]
         sichtbar_machen(daten, [f"/abfahrten/{n}/" for n in nachbarn])
         dateien = [p for n in nachbarn for p in sorted((daten / "abfahrten" / n).glob("*.parquet"))]
-        e = endstand_tag(lies(dateien), tag)
+        e = endstand_tag(lies(dateien), tag, reihenfolge)
         if e.empty:
             continue
-        ziel = daten / "endstand" / tag.isoformat()[:7] / f"{tag.isoformat()}.parquet"
+        ziel = endstand_pfad(daten, tag.isoformat())
         ziel.parent.mkdir(parents=True, exist_ok=True)
         e.to_parquet(ziel, index=False, compression="zstd")
-        erledigt.append(f"endstand/{tag}: {len(e)} Abfahrten")
+        art = "neu berechnet" if tag.isoformat() in vorhanden else "gebaut"
+        erledigt.append(f"endstand/{tag}: {len(e)} Abfahrten ({art}, Version {ENDSTAND_VERSION})")
     return erledigt
 
 
@@ -160,10 +217,9 @@ def monate_zum_archivieren(daten: Path, heute: date) -> list[str]:
 def archiviere_monat(daten: Path, monat: str, repo: str, hochladen, herunterladen, release_vorhanden) -> str:
     tage = ordner_im_repo(daten, "abfahrten")
     tage_monat = [t for t in tage if t.startswith(monat)]
-    endstand = {Path(n).stem for n in ordner_im_repo(daten, f"endstand/{monat}")}
-    fehlend = [t for t in tage_monat if t not in endstand]
+    fehlend = [t for t in tage_monat if not endstand_aktuell(daten, t)]
     if fehlend:
-        return f"{monat}: noch nicht archiviert, Endstand fehlt für {', '.join(fehlend)}"
+        return f"{monat}: noch nicht archiviert, aktueller Endstand fehlt für {', '.join(fehlend)}"
 
     sichtbar_machen(daten, [f"/{art}/{monat}-*/" for art in ARTEN])
     tag_name = f"rohdaten-{monat}"

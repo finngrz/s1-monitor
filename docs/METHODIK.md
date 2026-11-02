@@ -1,6 +1,6 @@
 # Methodik
 
-Version 0.5 · Stand 27.10.2026
+Version 0.6 · Stand 02.11.2026
 
 Grundsatz: Rohdaten werden unverändert gespeichert. Alle Definitionen werden erst bei der
 Auswertung angewendet und können daher geändert werden, ohne Daten zu verlieren. Jede
@@ -76,6 +76,18 @@ Abfahrt noch, meist um +1 bis +2 Minuten (Mittel +81 Sekunden, maximal +4 Minute
 vor der Abfahrt unterschätzt die tatsächliche Verspätung also systematisch. Negative Verspätungen
 (Frühabfahrten) liefert die Schnittstelle weiterhin nicht.
 
+**Fahrt-Identität (ab 02.11.2026, Endstand-Version 2):** Die Kennung `serviceId` der Schnittstelle
+ist nicht stabil: Derselbe Zug erscheint unter wechselnden Kennungen. Eine Abfahrt ist deshalb definiert
+über Station, Linie, Soll-Zeit und Fahrtrichtung (West/Ost entlang der Linie). Geflügelte Züge zählen
+damit automatisch einmal. Alle Endstand-Tabellen ab 26.10. wurden aus den unveränderten Rohdaten neu
+berechnet; Version 1 enthielt Doppelzählungen.
+
+**Abfahrten ohne Echtzeitangabe:** Für einen Teil der S1-Abfahrten liefert die Schnittstelle bis zur
+Abfahrt und danach keinen Verspätungswert (27.10.: 11 %, 29.10.–01.11.: 36–45 %). Diese Abfahrten zählen
+als „ohne Echtzeit“ und gehen weder als pünktlich noch als verspätet in die Quoten ein; ihr Anteil wird
+mit ausgewiesen. Ursache offen (fehlende Echtzeit im Datenfeed oder nicht verkehrende Fahrten). Ab
+02.11. zählt der Sammler je Abfrage, wie viele S1-Züge der nächsten 20 Minuten ohne Wert geliefert werden.
+
 **Offener Punkt:** Rund 13 % der S1-Soll-Zeiten aus der Schnittstelle finden sich nicht im
 Open-Data-Fahrplan (z. B. zusätzliche Abfahrten Richtung Wedel um :05/:15). Das bestand schon vor dem
 Rückblick und wird in Stufe 3 geklärt (abweichende Fahrplanversion, Zusatzfahrten oder Baufahrplan).
@@ -84,6 +96,7 @@ Rückblick und wird in Stufe 3 geklärt (abweichende Fahrplanversion, Zusatzfahr
 
 | Datum | Version | Änderung |
 | --- | --- | --- |
+| 02.11.2026 | 0.6 | Fahrt-Identität ohne `serviceId` (Endstand v2, neu berechnet); Abfahrten ohne Echtzeit getrennt ausgewiesen |
 | 27.10.2026 | 0.5 | D1 neu: letzter Stand inkl. Korrekturen nach der Abfahrt; Endstand-Tabelle; Monatsarchive |
 | 27.10.2026 | 0.4 | Hinweis: Frühabfahrten in den Daten nicht sichtbar |
 | 26.10.2026 | 0.4 | Erste Echtzeitdaten: Ankünfte nicht verfügbar (D2 angepasst), Minuten-Auflösung, geflügelte Züge |

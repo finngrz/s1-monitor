@@ -107,11 +107,19 @@ def abfrage_stationen(gti: GTI, cfg: dict, station: dict, art: str, speicher: Sp
     bezug = gti_zeit(antw.daten["time"]) if antw.daten.get("time") else lokal.replace(second=0, microsecond=0)
     abfahrten = antw.daten.get("departures") or []
     neu = 0
+    # Diagnose (nur Zählungen im Protokoll): Wie viele S1-Züge der nächsten 20 Minuten stehen in
+    # dieser Antwort, und wie viele davon ohne Echtzeitangabe? Klärt, ob Züge ohne Verspätungswert
+    # weiter geliefert werden (nur unverändert, daher nicht neu gespeichert) oder aus der Antwort fallen.
+    s1_20 = s1_20_ohne = 0
     for dep in abfahrten:
-        neu += speicher.nimm_auf("abfahrten", abfahrt_zu_zeile(dep, bezug, station["name"], art, t0))
+        zeile = abfahrt_zu_zeile(dep, bezug, station["name"], art, t0)
+        neu += speicher.nimm_auf("abfahrten", zeile)
+        if zeile["linie"] == "S1" and 0 <= (zeile["soll_utc"] - t0).total_seconds() <= 20 * 60:
+            s1_20 += 1
+            s1_20_ohne += zeile["verspaetung_s"] is None and not zeile["ausfall"]
     speicher.protokolliere(zeit_utc=t0, methode="departureList", station=station["name"], art=art,
                            http_status=antw.http_status, return_code="OK", anzahl=len(abfahrten),
-                           dauer_ms=antw.dauer_ms, fehler=None, neu=neu)
+                           dauer_ms=antw.dauer_ms, fehler=None, neu=neu, s1_20=s1_20, s1_20_ohne=int(s1_20_ohne))
 
 
 def abfrage_meldungen(gti: GTI, cfg: dict, speicher: Speicher) -> None:
