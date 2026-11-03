@@ -61,6 +61,7 @@
       <input type="range" id="schwelle" min="1" max="10" value="3" aria-label="Schwelle in Minuten">
       <b id="schwelle-text">3 min</b> Verspätung</label>
     <label><input type="checkbox" id="ausfaelle" checked> Ausfälle zählen als unpünktlich</label>
+    <label title="Stunden, in denen die Schnittstelle für mehr als ein Viertel der Abfahrten keinen Wert geliefert hat"><input type="checkbox" id="luecken"> Stunden mit lückenhaften Echtzeitdaten einbeziehen</label>
     <label>Zeitraum <select id="zeitraum">
       <option value="7">letzte 7 Tage</option><option value="28">letzte 28 Tage</option>
       <option value="alle" selected>gesamt</option></select></label>
@@ -149,7 +150,7 @@ const MITTE = [...Array(16).keys(), 18, 25, 35];       // Klassenmitten in Minut
 const STUNDE_ZU_ABSCHNITT = (h) => h < 4 ? "nachts" : h < 6 ? "frueh" : h < 9 ? "morgens" : h < 16 ? "tagsueber" : h < 19 ? "abends" : "spaetabends";
 const fmtP = (x) => isFinite(x) ? (x * 100).toLocaleString("de-DE", { maximumFractionDigits: 0 }) + " %" : "–";
 const fmtZ = (x) => isFinite(x) ? x.toLocaleString("de-DE") : "–";
-let D, diagramme = {};
+let D, X, diagramme = {};
 
 function einstellungen() {
   return {
@@ -187,7 +188,7 @@ function kennzahlen(s, e) {
   return { n, eigen, sbahn, mittel, ausfallQuote: s.ausfall / (n + s.ausfall), ausfall: s.ausfall };
 }
 function filterTagStunde(e, grenze) {
-  const t = D.tag_stunde;
+  const t = X.tag_stunde;
   return (i) => t.datum[i] >= grenze && tageszeitPasst(STUNDE_ZU_ABSCHNITT(t.stunde[i]), e.tageszeit)
     && (e.richtung === "beide" || t.richtung_gruppe[i] === e.richtung);
 }
@@ -213,13 +214,15 @@ const prozentAchse = (achse) => ({ [achse]: { min: 0, max: 1, grid: { color: css
   ticks: { color: css("--leise"), callback: (v) => Math.round(v * 100) + " %" } } });
 
 function zeichnen() {
+  // Standard: Stunden mit lückenhaften Echtzeitdaten ausgeschlossen; Schalter nimmt sie zum Vergleich hinzu
+  X = $("luecken").checked && D.mit_luecken ? { ...D, ...D.mit_luecken } : D;
   const e = einstellungen();
   $("schwelle-text").textContent = e.schwelle + " min";
   const grenze = datumGrenze(e.zeitraum);
   const s1 = css("--s1"), s2 = css("--s2");
 
   // Kacheln
-  const k = kennzahlen(summe(D.tag_stunde, filterTagStunde(e, grenze)), e);
+  const k = kennzahlen(summe(X.tag_stunde, filterTagStunde(e, grenze)), e);
   $("k-eigen").textContent = fmtP(k.eigen);
   $("k-eigen-name").textContent = `pünktlich (unter ${e.schwelle} min${e.ausfaelle ? ", Ausfälle zählen mit" : ""})`;
   $("k-sbahn").textContent = fmtP(k.sbahn);
@@ -228,8 +231,8 @@ function zeichnen() {
   $("k-n").textContent = fmtZ(k.n + k.ausfall);
 
   // Je Tag
-  const tage = [...new Set(D.tag_stunde.datum)].filter((d) => d >= grenze).sort();
-  const proTag = tage.map((d) => kennzahlen(summe(D.tag_stunde, (i) => D.tag_stunde.datum[i] === d && filterTagStunde(e, grenze)(i)), e));
+  const tage = [...new Set(X.tag_stunde.datum)].filter((d) => d >= grenze).sort();
+  const proTag = tage.map((d) => kennzahlen(summe(X.tag_stunde, (i) => X.tag_stunde.datum[i] === d && filterTagStunde(e, grenze)(i)), e));
   diagramm("c-tag", "line", tage.map((d) => d.slice(8, 10) + "." + d.slice(5, 7) + "."), [
     { label: `eigene Definition (unter ${e.schwelle} min)`, data: proTag.map((x) => x.eigen), borderColor: s1, backgroundColor: s1, borderWidth: 2, pointRadius: 4 },
     { label: "S-Bahn-Definition", data: proTag.map((x) => x.sbahn), borderColor: s2, backgroundColor: s2, borderWidth: 2, pointRadius: 4 },
@@ -237,14 +240,14 @@ function zeichnen() {
 
   // Je Stunde
   const stunden = [...Array(24).keys()];
-  const proStunde = stunden.map((h) => kennzahlen(summe(D.tag_stunde, (i) => D.tag_stunde.stunde[i] === h && D.tag_stunde.datum[i] >= grenze
-    && (e.richtung === "beide" || D.tag_stunde.richtung_gruppe[i] === e.richtung)), e));
+  const proStunde = stunden.map((h) => kennzahlen(summe(X.tag_stunde, (i) => X.tag_stunde.stunde[i] === h && X.tag_stunde.datum[i] >= grenze
+    && (e.richtung === "beide" || X.tag_stunde.richtung_gruppe[i] === e.richtung)), e));
   diagramm("c-stunde", "bar", stunden.map((h) => h + " Uhr"), [
     { label: `pünktlich (unter ${e.schwelle} min)`, data: proStunde.map((x) => x.n >= 20 ? x.eigen : null), backgroundColor: s1, borderRadius: 4 },
   ], { scales: Object.assign({ x: { grid: { display: false }, ticks: { color: css("--leise") } } }, prozentAchse("y")) });
 
   // Je Station
-  const st = D.station;
+  const st = X.station;
   const stationen = D.meta.stationen.filter((n) => !D.meta.startbahnhoefe.includes(n));
   const proStation = stationen.map((n) => kennzahlen(summe(st, (i) => st.abfrage_station[i] === n && st.datum[i] >= grenze
     && tageszeitPasst(st.abschnitt[i], e.tageszeit) && (e.richtung === "beide" || st.richtung_gruppe[i] === e.richtung)), e));
@@ -253,7 +256,7 @@ function zeichnen() {
   ], { indexAxis: "y", scales: Object.assign({ y: { grid: { display: false }, ticks: { color: css("--leise"), autoSkip: false } } }, prozentAchse("x")) });
 
   // Abschnitte: eine Zeile je Streckenabschnitt (in Streckenreihenfolge), ein Balken je Richtung
-  const ab = D.abschnitte, seg = {};
+  const ab = X.abschnitte, seg = {};
   const pos = (n) => (n === "Hamburg Airport (Flughafen)" ? D.meta.stationen.indexOf("Ohlsdorf") + 0.5 : D.meta.stationen.indexOf(n));
   for (let i = 0; i < ab.von.length; i++) {
     if (ab.datum[i] < grenze || !tageszeitPasst(ab.abschnitt[i], e.tageszeit)) continue;
@@ -272,7 +275,7 @@ function zeichnen() {
                  x: { grid: { color: css("--raster") }, ticks: { color: css("--leise") }, title: { display: true, text: "Sekunden je Zug (negativ = holt Zeit auf)", color: css("--leise") } } } });
 
   // Prognose vs. Realität
-  const p = D.prognose; let pn = 0, ps = 0, ph = 0, ph2 = 0;
+  const p = X.prognose; let pn = 0, ps = 0, ph = 0, ph2 = 0;
   for (let i = 0; i < p.n.length; i++) {
     if (p.datum[i] < grenze || !tageszeitPasst(p.abschnitt[i], e.tageszeit)) continue;
     if (e.richtung !== "beide" && p.richtung_gruppe[i] !== e.richtung) continue;
@@ -282,11 +285,11 @@ function zeichnen() {
   $("prognose-text").textContent = pn ? `Im Schnitt lag die tatsächliche Verspätung ${Math.round(ps / pn)} Sekunden über der letzten Anzeige; bei ${fmtP(ph2 / pn)} um 2 Minuten oder mehr (${fmtZ(pn)} Abfahrten).` : "Noch keine Daten.";
 
   // Pendelweg
-  const ap = D.pendel.ankunft_poppenbuettel;
+  const ap = X.pendel.ankunft_poppenbuettel;
   const kp = kennzahlen(summe(ap, (i) => ap.datum[i] >= grenze && tageszeitPasst(STUNDE_ZU_ABSCHNITT(ap.stunde[i]), e.tageszeit)), e);
   $("k-popp").textContent = fmtP(kp.eigen);
   $("k-popp-name").textContent = `pünktlich in Poppenbüttel (unter ${e.schwelle} min)`;
-  const w = D.pendel.warten_176, wh = new Array(31).fill(0);
+  const w = X.pendel.warten_176, wh = new Array(31).fill(0);
   for (let i = 0; i < w.hist.length; i++) {
     if (w.datum[i] < grenze || !tageszeitPasst(STUNDE_ZU_ABSCHNITT(w.stunde[i]), e.tageszeit)) continue;
     w.hist[i].forEach((v, m) => (wh[m] += v));
@@ -325,7 +328,7 @@ fetch("daten/kennzahlen.json", { cache: "no-store" }).then((r) => r.json()).then
   qualitaet();
   datenlage();
   zeichnen();
-  ["schwelle", "ausfaelle", "zeitraum", "tageszeit", "richtung"].forEach((id) => $(id).addEventListener("input", zeichnen));
+  ["schwelle", "ausfaelle", "luecken", "zeitraum", "tageszeit", "richtung"].forEach((id) => $(id).addEventListener("input", zeichnen));
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", zeichnen);
 }).catch(() => { $("banner").textContent = "Die Daten konnten nicht geladen werden."; });
 </script>

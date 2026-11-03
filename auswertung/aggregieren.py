@@ -221,8 +221,19 @@ def main() -> int:
     reihenfolge = stationsreihenfolge()
     s = vorbereiten(endstand, reihenfolge)
     lage = echtzeit_qualitaet(s)
-    s = ohne_schwache_stunden(s, lage)
+    s_alle = s
+    s = ohne_schwache_stunden(s_alle, lage)
     puenktlich_basis = s[~s["abfrage_station"].isin(STARTBAHNHOEFE)]
+
+    def auswertungen(x: pd.DataFrame) -> dict:
+        basis = x[~x["abfrage_station"].isin(STARTBAHNHOEFE)]
+        return {
+            "tag_stunde": histogramme(basis, ["datum", "stunde", "richtung_gruppe"]),
+            "station": histogramme(x, ["abfrage_station", "datum", "abschnitt", "richtung_gruppe"]),
+            "abschnitte": abschnitte_entlang(x, reihenfolge),
+            "prognose": prognose_vs_realitaet(x),
+            "pendel": pendelweg(endstand, x, Path(args.fahrplan)),
+        }
 
     qualitaet = []
     if Path(args.qualitaet).exists():
@@ -239,11 +250,9 @@ def main() -> int:
             "startbahnhoefe": sorted(STARTBAHNHOEFE), "d1_korrektur_ab": D1_KORREKTUR_AB,
             "quelle": "Echtzeitdaten: Geofox-Schnittstelle der Hamburger Hochbahn AG; Soll-Fahrplan: hvv (Transparenzportal Hamburg)",
         },
-        "tag_stunde": histogramme(puenktlich_basis, ["datum", "stunde", "richtung_gruppe"]),
-        "station": histogramme(s, ["abfrage_station", "datum", "abschnitt", "richtung_gruppe"]),
-        "abschnitte": abschnitte_entlang(s, reihenfolge),
-        "prognose": prognose_vs_realitaet(s),
-        "pendel": pendelweg(endstand, s, Path(args.fahrplan)),
+        **auswertungen(s),
+        # Vergleichsvariante inkl. Stunden mit lückenhaften Echtzeitdaten (Schalter im Dashboard)
+        "mit_luecken": auswertungen(s_alle) if len(s_alle) != len(s) else {},
         "qualitaet": qualitaet,
         "datenlage": datenlage_meta(lage),
     }
