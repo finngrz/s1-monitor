@@ -18,7 +18,7 @@ on:
       - ".github/workflows/sammler.yml"
 
 permissions:
-  contents: read
+  contents: write   # nur für den Zweig "live" (verschlüsselter Live-Stand)
   actions: write
 
 concurrency:
@@ -86,6 +86,8 @@ jobs:
         env:
           GTI_USER: ${{ secrets.GTI_USER }}
           GTI_PASS: ${{ secrets.GTI_PASS }}
+          LIVE_PASSWORT: ${{ secrets.LIVE_PASSWORT }}
+          LIVE_TOKEN: ${{ github.token }}
         run: |
           speichern() {
             git -C daten add --sparse -A

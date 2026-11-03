@@ -35,6 +35,7 @@ import pandas as pd
 HIER = Path(__file__).resolve().parent
 sys.path.insert(0, str(HIER))
 
+import lage as lg  # noqa: E402
 from kompaktieren import kompaktiere  # noqa: E402
 from speicher import BERLIN, kennungen_kuerzen  # noqa: E402
 
@@ -91,7 +92,8 @@ def gruende(roh: str) -> list[str]:
     return [a.get("value") for a in attribute if "REALTIME_REASON" in (a.get("types") or []) and a.get("value")]
 
 
-ENDSTAND_VERSION = 2  # 2: Züge über Station, Linie, Soll-Zeit und Richtung erkannt (serviceId wechselt)
+ENDSTAND_VERSION = 3  # 2: Züge über Station, Linie, Soll-Zeit und Richtung erkannt (serviceId wechselt)
+#                       3: zusätzlich Prognose-Merkmale (Anzeige und Lage der Linie je Vorlauf)
 
 
 def stationsreihenfolge() -> list[str]:
@@ -121,10 +123,11 @@ def endstand_tag(beobachtungen: pd.DataFrame, tag: date, reihenfolge: list[str] 
         return pd.DataFrame()
     df["beobachtet_utc"] = pd.to_datetime(df["beobachtet_utc"], utc=True)
     df["soll_utc"] = pd.to_datetime(df["soll_utc"], utc=True)
+    df["richtung_gruppe"] = richtung_gruppe(df, reihenfolge or stationsreihenfolge())
+    alle = df  # inkl. Nachbartage: für die Lage der Linie kurz nach Mitternacht
     df = df[df["soll_utc"].dt.tz_convert(BERLIN).dt.date == tag].copy()
     if df.empty:
         return pd.DataFrame()
-    df["richtung_gruppe"] = richtung_gruppe(df, reihenfolge or stationsreihenfolge())
     df["fahrt"] = pd.util.hash_pandas_object(
         df[["abfrage_station", "linie", "soll_utc", "richtung_gruppe"]], index=False).astype("uint64").map("{:016x}".format)
     df = df.sort_values("beobachtet_utc", kind="stable")
@@ -155,8 +158,62 @@ def endstand_tag(beobachtungen: pd.DataFrame, tag: date, reihenfolge: list[str] 
     erg["grund"] = grund.reindex(erg.index)
     erg.insert(0, "datum", tag.isoformat())
     erg["endstand_version"] = ENDSTAND_VERSION
+    erg = prognose_merkmale(alle, erg)
     return erg.reset_index().rename(columns={"fahrt": "schluessel"}).sort_values(
         ["soll_utc", "abfrage_station", "linie"], kind="stable")
+
+
+def prognose_merkmale(alle: pd.DataFrame, erg: pd.DataFrame) -> pd.DataFrame:
+    """Für jede S1-Abfahrt: Was zeigte die Schnittstelle L Minuten vorher, und wie war da die Lage der Linie?
+
+    Regeln in sammler/lage.py. Ergänzt Spalten anzeige_{L}_s, lage_{L}_s, lage_{L}_n (L = Vorlauf in
+    Minuten) sowie verspaetung_folgehalt_s für Startbahnhöfe.
+    """
+    import duckdb  # noqa: PLC0415
+
+    spalten = [f"{p}_{L}_{e}" for L in lg.VORLAEUFE_MIN for p, e in (("anzeige", "s"), ("lage", "s"), ("lage", "n"))]
+    for sp in spalten + ["verspaetung_folgehalt_s"]:
+        erg[sp] = np.nan
+    s1 = alle[(alle["linie"] == "S1") & (alle["verkehrsmittel"] == "TRAIN") & alle["richtung_gruppe"].isin(["west", "ost"])]
+    werte = s1.loc[s1["verspaetung_s"].notna(), ["abfrage_station", "soll_utc", "richtung_gruppe", "beobachtet_utc",
+                                                  "verspaetung_s"]].rename(columns={
+        "abfrage_station": "st", "soll_utc": "s", "richtung_gruppe": "g", "beobachtet_utc": "b", "verspaetung_s": "v"})
+    ziel = erg[(erg["linie"] == "S1") & (erg["verkehrsmittel"] == "TRAIN") & erg["richtung_gruppe"].isin(["west", "ost"])]
+    if ziel.empty or werte.empty:
+        return erg
+    z = ziel[["abfrage_station", "soll_utc", "richtung_gruppe"]].rename(
+        columns={"abfrage_station": "st", "soll_utc": "s", "richtung_gruppe": "g"}).reset_index()
+    z["zg"] = [lg.zulauf(a, b) for a, b in zip(z["st"], z["g"])]
+    con = duckdb.connect()
+    con.register("werte", werte)
+    con.register("ziel", z)
+    con.execute(f"""create table w as select * from werte""")
+    con.execute(f"""create table grid as select distinct st, s, g, unnest(generate_series(date_trunc('minute', s),
+        date_trunc('minute', s) + interval {lg.LAGE_FENSTER_MIN} minute, interval 1 minute)) t
+        from w where st not in ({",".join("'" + x + "'" for x in lg.STARTBAHNHOEFE)})""")
+    con.execute("""create table lage as select grid.g, grid.t, avg(w.v) lage_s, count(w.v) lage_n
+        from grid asof left join w on grid.st = w.st and grid.s = w.s and grid.g = w.g and w.b <= grid.t
+        group by grid.g, grid.t""")
+    for L in lg.VORLAEUFE_MIN:
+        d = con.execute(f"""with z0 as (select *, s - interval {L} minute t0 from ziel)
+            select z0.fahrt, w.v anzeige, lage.lage_s, lage.lage_n from z0
+            asof left join w on z0.st = w.st and z0.s = w.s and z0.g = w.g and w.b <= z0.t0
+            left join lage on lage.g = z0.zg and lage.t = date_trunc('minute', z0.t0)""").df().set_index("fahrt")
+        d = d.astype("float64")
+        erg.loc[d.index, f"anzeige_{L}_s"] = d["anzeige"].to_numpy()
+        erg.loc[d.index, f"lage_{L}_s"] = d["lage_s"].round(1).to_numpy()
+        erg.loc[d.index, f"lage_{L}_n"] = d["lage_n"].fillna(0).to_numpy()
+    # Startbahnhöfe: tatsächliche Verspätung = Verspätung desselben Zuges am nächsten Halt
+    for (start, g), folge in lg.FOLGEHALT.items():
+        a = ziel[(ziel["abfrage_station"] == start) & (ziel["richtung_gruppe"] == g)].sort_values("soll_utc")
+        b = erg[(erg["abfrage_station"] == folge) & (erg["richtung_gruppe"] == g) & (erg["linie"] == "S1")
+                & erg["verspaetung_s"].notna()].sort_values("soll_utc")
+        if a.empty or b.empty:
+            continue
+        m = pd.merge_asof(a[["soll_utc"]].reset_index(), b[["soll_utc", "verspaetung_s"]], on="soll_utc",
+                          direction="forward", tolerance=pd.Timedelta(minutes=6), allow_exact_matches=False)
+        erg.loc[m["fahrt"], "verspaetung_folgehalt_s"] = m["verspaetung_s"].astype("float64").to_numpy()
+    return erg
 
 
 def endstand_pfad(daten: Path, tag: str) -> Path:

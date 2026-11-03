@@ -1,0 +1,55 @@
+name: Prognose-Tabelle aktualisieren
+
+# Berechnet täglich die Nachschlagetabelle für die Live-Prognose neu (auswertung/prognose_tabelle.py).
+# Grundlage: private Endstand-Tabelle. Ergebnis (nur Zählungen): ergebnisse/prognose_tabelle.json.
+# Der Sammler liest die Tabelle beim Start jedes Laufs, sie wird also mit jedem Tag genauer.
+on:
+  schedule:
+    - cron: "37 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prognose
+  cancel-in-progress: false
+
+jobs:
+  berechnen:
+    if: vars.SAMMLER_AKTIV == 'ja'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Abhängigkeiten installieren
+        run: pip install -r requirements.txt
+
+      - name: Endstand-Tabelle holen (nur lesen, privat)
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ vars.DATEN_REPO }}
+          token: ${{ secrets.DATEN_TOKEN }}
+          path: daten
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /endstand/
+
+      - name: Tabelle berechnen
+        run: python auswertung/prognose_tabelle.py --endstand daten/endstand --ausgabe ergebnisse/prognose_tabelle.json
+
+      - name: Speichern
+        run: |
+          git config user.name "s1-monitor-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ergebnisse/prognose_tabelle.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -q -m "Prognose-Tabelle aktualisiert"
+          git pull -q --rebase && git push -q

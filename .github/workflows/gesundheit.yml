@@ -59,6 +59,8 @@ jobs:
 
       - name: Prüfen
         id: pruefen
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           python sammler/gesundheit.py --daten daten --ausgabe ergebnisse/datenqualitaet.csv \
             ${{ inputs.test_fehler && '--test-fehler' || '' }}

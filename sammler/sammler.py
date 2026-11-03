@@ -28,6 +28,7 @@ HIER = Path(__file__).resolve().parent
 sys.path.insert(0, str(HIER))
 
 from gti import GTI, GTIFehler  # noqa: E402
+from live import LiveStand, LiveVeroeffentlichung, tabelle_laden  # noqa: E402
 from speicher import BERLIN, Speicher, abfahrt_zu_zeile, gti_zeit, meldung_zu_zeile  # noqa: E402
 
 SCHREIB_INTERVALL_S = 300
@@ -87,7 +88,7 @@ def pruefe_stationen(gti: GTI, cfg: dict, datei: Path, speicher: Speicher) -> li
     return ergebnis
 
 
-def abfrage_stationen(gti: GTI, cfg: dict, station: dict, art: str, speicher: Speicher) -> None:
+def abfrage_stationen(gti: GTI, cfg: dict, station: dict, art: str, speicher: Speicher, live=None) -> None:
     """Eine departureList-Abfrage (Abfahrten oder Ankünfte) für eine Station."""
     t0 = jetzt()
     # Abfrage beginnt einige Minuten in der Vergangenheit: So sehen wir bereits abgefahrene Züge
@@ -114,6 +115,8 @@ def abfrage_stationen(gti: GTI, cfg: dict, station: dict, art: str, speicher: Sp
     for dep in abfahrten:
         zeile = abfahrt_zu_zeile(dep, bezug, station["name"], art, t0)
         neu += speicher.nimm_auf("abfahrten", zeile)
+        if live is not None:
+            live.aufnehmen(zeile)
         if zeile["linie"] == "S1" and 0 <= (zeile["soll_utc"] - t0).total_seconds() <= 20 * 60:
             s1_20 += 1
             s1_20_ohne += zeile["verspaetung_s"] is None and not zeile["ausfall"]
@@ -122,7 +125,7 @@ def abfrage_stationen(gti: GTI, cfg: dict, station: dict, art: str, speicher: Sp
                            dauer_ms=antw.dauer_ms, fehler=None, neu=neu, s1_20=s1_20, s1_20_ohne=int(s1_20_ohne))
 
 
-def abfrage_meldungen(gti: GTI, cfg: dict, speicher: Speicher) -> None:
+def abfrage_meldungen(gti: GTI, cfg: dict, speicher: Speicher, live=None) -> None:
     t0 = jetzt()
     nutzlast = {"full": True, "filterPlanned": "NO_FILTER"}
     if cfg.get("meldungen_linien"):  # leer = alle hvv-Meldungen (Auswahl erst in der Auswertung)
@@ -130,6 +133,8 @@ def abfrage_meldungen(gti: GTI, cfg: dict, speicher: Speicher) -> None:
     antw = gti.anfrage("getAnnouncements", nutzlast)
     meldungen = antw.daten.get("announcements") or []
     neu = sum(speicher.nimm_auf("meldungen", meldung_zu_zeile(m, t0)) for m in meldungen)
+    if live is not None:
+        live.meldungen_aufnehmen(meldungen, t0)
     speicher.protokolliere(zeit_utc=t0, methode="getAnnouncements", station=None, art=None,
                            http_status=antw.http_status, return_code="OK", anzahl=len(meldungen),
                            dauer_ms=antw.dauer_ms, fehler=None, neu=neu)
@@ -163,6 +168,16 @@ def main() -> int:
         speicher.schreibe()
         return 2
 
+    # Live-Seite (optional): nur mit Passwort und Schreibrecht auf dieses Repository
+    live = sender = None
+    lcfg = cfg.get("live", {})
+    if os.environ.get("LIVE_PASSWORT") and os.environ.get("LIVE_TOKEN") and os.environ.get("GITHUB_REPOSITORY"):
+        live = LiveStand(lcfg, [s["name"] for s in cfg["stationen"]],
+                         tabelle_laden(HIER.parent / "ergebnisse" / "prognose_tabelle.json"))
+        sender = LiveVeroeffentlichung(os.environ["LIVE_PASSWORT"], os.environ["GITHUB_REPOSITORY"],
+                                       os.environ["LIVE_TOKEN"])
+    naechster_live = time.monotonic() + 60  # erst eine volle Abfragerunde abwarten
+
     aufgaben = [(st, "ab") for st in stationen] + [(st, "an") for st in stationen if st.get("ankuenfte")]
     abstand = max(cfg["zyklus_s"] / max(len(aufgaben), 1), 1.0 / cfg["max_abfragen_pro_s"])
     ende = time.monotonic() + args.dauer_min * 60
@@ -185,9 +200,9 @@ def main() -> int:
             i += 1
         try:
             if aufgabe[0] == "meldungen":
-                abfrage_meldungen(gti, cfg, speicher)
+                abfrage_meldungen(gti, cfg, speicher, live)
             else:
-                abfrage_stationen(gti, cfg, aufgabe[0], aufgabe[1], speicher)
+                abfrage_stationen(gti, cfg, aufgabe[0], aufgabe[1], speicher, live)
             fehler_in_folge = 0
         except GTIFehler as f:
             name = None if aufgabe[0] == "meldungen" else aufgabe[0]["name"]
@@ -222,6 +237,11 @@ def main() -> int:
             takt = time.monotonic()
             continue
 
+        if live is not None and time.monotonic() >= naechster_live:
+            live.aufraeumen(jetzt())
+            sender.senden(live.schnappschuss(jetzt()))
+            naechster_live = time.monotonic() + lcfg.get("intervall_s", 120)
+
         if time.monotonic() >= naechstes_schreiben:
             speicher.schreibe()
             naechstes_schreiben = time.monotonic() + schreib_intervall
@@ -230,6 +250,12 @@ def main() -> int:
         time.sleep(max(0.0, takt - time.monotonic()))
 
     speicher.schreibe()
+    if sender is not None:
+        sender.beenden()
+        print(f"Live-Seite: {sender.erfolge} Stände veröffentlicht, {sender.fehler} Fehler"
+              + (f" (zuletzt {sender.letzter_fehler})" if sender.fehler else ""))
+        if sender.fehler and not sender.erfolge:
+            print(f"::warning title=Live-Seite::Kein Live-Stand veröffentlicht ({sender.letzter_fehler})")
     z = speicher.zaehler
     print(f"::notice title=Sammler::Lauf beendet: {z['abfragen']} Abfragen, {z['fehler']} Fehler, "
           f"{z.get('abfahrten_neu', 0)} neue/geänderte Abfahrten, {z.get('meldungen_neu', 0)} neue Meldungen"

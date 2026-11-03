@@ -11,39 +11,164 @@
   "meldungen_alle_s": 300,
   "schreib_intervall_s": 1800,
   "meldungen_linien": [],
-  "pause_nach_fehler_s": [30, 60, 120, 300, 600],
+  "pause_nach_fehler_s": [
+    30,
+    60,
+    120,
+    300,
+    600
+  ],
   "max_fehler_in_folge_bis_abbruch": 20,
   "stationen": [
-    {"name": "Wedel", "ifopt": "de:01056:85950"},
-    {"name": "Rissen", "ifopt": "de:02000:81953"},
-    {"name": "Sülldorf", "ifopt": "de:02000:81952"},
-    {"name": "Iserbrook", "ifopt": "de:02000:81951"},
-    {"name": "Blankenese", "ifopt": "de:02000:81950"},
-    {"name": "Hochkamp", "ifopt": "de:02000:80957"},
-    {"name": "Klein Flottbek (Botanischer Garten)", "ifopt": "de:02000:80956"},
-    {"name": "Othmarschen", "ifopt": "de:02000:80955"},
-    {"name": "Bahrenfeld", "ifopt": "de:02000:80954"},
-    {"name": "Ottensen", "ifopt": "de:02000:8002562"},
-    {"name": "Altona", "ifopt": "de:02000:80953"},
-    {"name": "Königstraße", "ifopt": "de:02000:80952"},
-    {"name": "Reeperbahn", "ifopt": "de:02000:80951"},
-    {"name": "Landungsbrücken", "ifopt": "de:02000:80950"},
-    {"name": "Stadthausbrücke", "ifopt": "de:02000:11952"},
-    {"name": "Jungfernstieg", "ifopt": "de:02000:11950"},
-    {"name": "Hamburg Hbf", "ifopt": "de:02000:10950"},
-    {"name": "Berliner Tor", "ifopt": "de:02000:10952"},
-    {"name": "Landwehr", "ifopt": "de:02000:10953"},
-    {"name": "Hasselbrook", "ifopt": "de:02000:60950"},
-    {"name": "Wandsbeker Chaussee", "ifopt": "de:02000:60951"},
-    {"name": "Friedrichsberg", "ifopt": "de:02000:60952"},
-    {"name": "Barmbek", "ifopt": "de:02000:70950"},
-    {"name": "Alte Wöhr (Stadtpark)", "ifopt": "de:02000:70951"},
-    {"name": "Rübenkamp (City Nord)", "ifopt": "de:02000:70952"},
-    {"name": "Ohlsdorf", "ifopt": "de:02000:90950"},
-    {"name": "Kornweg (Klein Borstel)", "ifopt": "de:02000:71950"},
-    {"name": "Hoheneichen", "ifopt": "de:02000:71951"},
-    {"name": "Wellingsbüttel", "ifopt": "de:02000:71952"},
-    {"name": "Poppenbüttel", "ifopt": "de:02000:71953"},
-    {"name": "Hamburg Airport (Flughafen)", "ifopt": "de:02000:99651"}
-  ]
+    {
+      "name": "Wedel",
+      "ifopt": "de:01056:85950"
+    },
+    {
+      "name": "Rissen",
+      "ifopt": "de:02000:81953"
+    },
+    {
+      "name": "Sülldorf",
+      "ifopt": "de:02000:81952"
+    },
+    {
+      "name": "Iserbrook",
+      "ifopt": "de:02000:81951"
+    },
+    {
+      "name": "Blankenese",
+      "ifopt": "de:02000:81950"
+    },
+    {
+      "name": "Hochkamp",
+      "ifopt": "de:02000:80957"
+    },
+    {
+      "name": "Klein Flottbek (Botanischer Garten)",
+      "ifopt": "de:02000:80956"
+    },
+    {
+      "name": "Othmarschen",
+      "ifopt": "de:02000:80955"
+    },
+    {
+      "name": "Bahrenfeld",
+      "ifopt": "de:02000:80954"
+    },
+    {
+      "name": "Ottensen",
+      "ifopt": "de:02000:8002562"
+    },
+    {
+      "name": "Altona",
+      "ifopt": "de:02000:80953"
+    },
+    {
+      "name": "Königstraße",
+      "ifopt": "de:02000:80952"
+    },
+    {
+      "name": "Reeperbahn",
+      "ifopt": "de:02000:80951"
+    },
+    {
+      "name": "Landungsbrücken",
+      "ifopt": "de:02000:80950"
+    },
+    {
+      "name": "Stadthausbrücke",
+      "ifopt": "de:02000:11952"
+    },
+    {
+      "name": "Jungfernstieg",
+      "ifopt": "de:02000:11950"
+    },
+    {
+      "name": "Hamburg Hbf",
+      "ifopt": "de:02000:10950"
+    },
+    {
+      "name": "Berliner Tor",
+      "ifopt": "de:02000:10952"
+    },
+    {
+      "name": "Landwehr",
+      "ifopt": "de:02000:10953"
+    },
+    {
+      "name": "Hasselbrook",
+      "ifopt": "de:02000:60950"
+    },
+    {
+      "name": "Wandsbeker Chaussee",
+      "ifopt": "de:02000:60951"
+    },
+    {
+      "name": "Friedrichsberg",
+      "ifopt": "de:02000:60952"
+    },
+    {
+      "name": "Barmbek",
+      "ifopt": "de:02000:70950"
+    },
+    {
+      "name": "Alte Wöhr (Stadtpark)",
+      "ifopt": "de:02000:70951"
+    },
+    {
+      "name": "Rübenkamp (City Nord)",
+      "ifopt": "de:02000:70952"
+    },
+    {
+      "name": "Ohlsdorf",
+      "ifopt": "de:02000:90950"
+    },
+    {
+      "name": "Kornweg (Klein Borstel)",
+      "ifopt": "de:02000:71950"
+    },
+    {
+      "name": "Hoheneichen",
+      "ifopt": "de:02000:71951"
+    },
+    {
+      "name": "Wellingsbüttel",
+      "ifopt": "de:02000:71952"
+    },
+    {
+      "name": "Poppenbüttel",
+      "ifopt": "de:02000:71953"
+    },
+    {
+      "name": "Hamburg Airport (Flughafen)",
+      "ifopt": "de:02000:99651"
+    }
+  ],
+  "live": {
+    "intervall_s": 120,
+    "vorschau_min": 45,
+    "max_abfahrten": 6,
+    "ansichten": [
+      {
+        "id": "poppenbuettel",
+        "titel": "Poppenbüttel → Innenstadt",
+        "station": "Poppenbüttel",
+        "richtung": "west"
+      },
+      {
+        "id": "ohlsdorf",
+        "titel": "Ohlsdorf → Innenstadt",
+        "station": "Ohlsdorf",
+        "richtung": "west"
+      },
+      {
+        "id": "stadthausbruecke",
+        "titel": "Stadthausbrücke → Poppenbüttel",
+        "station": "Stadthausbrücke",
+        "richtung": "ost",
+        "ziel_enthaelt": "Poppenbüttel"
+      }
+    ]
+  }
 }

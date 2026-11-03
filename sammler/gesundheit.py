@@ -99,6 +99,34 @@ def datenlage_pruefen(endstand: pd.DataFrame, probleme: list[str]) -> dict:
     return {"endstand_ohne_wert": round(anteil, 4), "stunden_ausgeschlossen": len(schwach)}
 
 
+LIVE_MAX_ALTER_MIN = 15
+
+
+def live_pruefen(probleme: list[str]) -> float | None:
+    """Wird der verschlüsselte Live-Stand (Zweig „live“) noch laufend erneuert? Ohne Zweig: nichts zu prüfen."""
+    import os  # noqa: PLC0415
+
+    import requests  # noqa: PLC0415
+
+    repo, token = os.environ.get("GITHUB_REPOSITORY"), os.environ.get("GITHUB_TOKEN")
+    if not repo or not token:
+        return None
+    try:
+        r = requests.get(f"https://api.github.com/repos/{repo}/branches/live", timeout=20,
+                         headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"})
+        if r.status_code == 404:
+            return None  # Live-Seite (noch) nicht eingerichtet
+        r.raise_for_status()
+        zeit = datetime.fromisoformat(r.json()["commit"]["commit"]["committer"]["date"].replace("Z", "+00:00"))
+    except Exception as f:  # noqa: BLE001
+        print(f"::warning title=Live-Seite::Prüfung nicht möglich ({type(f).__name__})")
+        return None
+    alter = (datetime.now(timezone.utc) - zeit).total_seconds() / 60
+    if alter > LIVE_MAX_ALTER_MIN:
+        probleme.append(f"Live-Seite steht: letzter Live-Stand vor {alter:.0f} Minuten")
+    return round(alter, 1)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--daten", required=True)
@@ -124,6 +152,7 @@ def main() -> int:
         kennzahlen.update(datenlage_pruefen(pd.read_parquet(endstand_gestern), probleme))
     else:
         print(f"::notice title=Datenlage::Endstand für {tag} noch nicht gebaut, Datenlage wird morgen nachgeholt")
+    kennzahlen["live_alter_min"] = live_pruefen(probleme)
     if args.test_fehler:
         probleme.append("Test: absichtlich ausgelöster Fehler, um die E-Mail-Benachrichtigung zu prüfen")
     kennzahlen["probleme"] = " | ".join(probleme)

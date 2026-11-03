@@ -1,6 +1,6 @@
 # Methodik
 
-Version 0.7 · Stand 03.11.2026
+Version 0.8 · Stand 03.11.2026
 
 Grundsatz: Rohdaten werden unverändert gespeichert. Alle Definitionen werden erst bei der
 Auswertung angewendet und können daher geändert werden, ohne Daten zu verlieren. Jede
@@ -119,10 +119,40 @@ mindestens 3 Stunden ausgeschlossen werden.
 Open-Data-Fahrplan (z. B. zusätzliche Abfahrten Richtung Wedel um :05/:15). Das bestand schon vor dem
 Rückblick und wird in Stufe 3 geklärt (abweichende Fahrplanversion, Zusatzfahrten oder Baufahrplan).
 
+## Live-Seite und Kurzfrist-Prognose (ab 03.11.2026)
+
+**Zweck:** privat sehen, wie die S1 gerade läuft, und ob die nächsten Züge voraussichtlich später kommen
+als angezeigt. Keine zusätzliche Abfrage bei der Hochbahn: Der Sammler rechnet den Live-Stand alle
+2 Minuten aus den Daten, die er ohnehin abfragt.
+
+**Lage der Linie:** je Richtung Mittelwert der zuletzt bekannten Verspätung aller S1-Abfahrten mit
+Soll-Zeit in den letzten 20 Minuten (ohne Startbahnhöfe, mindestens 3 Abfahrten).
+
+**Prognose:** Nachschlagetabelle, keine Black Box. Für jede Kombination aus Art des Halts (unterwegs /
+Startbahnhof), Vorlauf (0, 5, 10, 15, 20, 30 Minuten), Anzeige der Schnittstelle (0, 1–2, 3–4, 5–7, >7 min)
+und Lage der Linie (<1, 1–3, 3–6, >6 min): Mittelwert, 20 %- und 80 %-Quantil der tatsächlichen
+Verspätung. Zellen mit weniger als 30 Fällen weichen auf gröbere Zellen aus. Die erwartete Verspätung
+ist nie kleiner als die Anzeige. An Startbahnhöfen zählt die Lage der Gegenrichtung (der ankommende Zug
+fährt zurück); als tatsächliche Verspätung gilt die am nächsten Halt. Die Tabelle wird täglich aus der
+Endstand-Tabelle neu berechnet (`ergebnisse/prognose_tabelle.json`, nur Zählungen). Sie enthält eine
+Gütemessung an den jeweils letzten 2 Tagen, die beim Berechnen nicht verwendet wurden.
+
+**Befund 03.11.2026 (52.000 Abfahrten, geprüft an 01.–03.11.):** Von den Zügen, die am Ende mindestens
+5 Minuten zu spät waren, zeigte die Schnittstelle 10 Minuten vorher nur bei 17 % mindestens +4; mit der
+Lage der Linie werden 27 % erkannt, davon 74 % zu Recht. Selbst bei Abfahrt zeigt sie nur bei 36 % eine
+nennenswerte Verspätung. Ist die Linie gestört (Ø über 6 min), kamen als pünktlich angezeigte Züge im
+Mittel 5 Minuten zu spät. Das Signal reicht etwa 20–30 Minuten voraus, nach 45 Minuten ist es weg.
+
+**Vertraulichkeit:** Einzelne Züge mit Live-Verspätung sind Rohdaten der Schnittstelle. Der Live-Stand
+wird deshalb mit AES-256-GCM verschlüsselt (Schlüssel aus einem Passwort per PBKDF2-SHA256, 210.000
+Runden) und nur als einzelne Datei im Zweig `live` abgelegt. Ohne Passwort ist er nicht lesbar; das
+Passwort ist nur für den privaten Gebrauch bestimmt.
+
 ## Änderungsprotokoll
 
 | Datum | Version | Änderung |
 | --- | --- | --- |
+| 03.11.2026 | 0.8 | Live-Seite mit Kurzfrist-Prognose; Endstand Version 3 (Prognose-Merkmale) |
 | 03.11.2026 | 0.7 | Stunden mit > 25 % ohne Echtzeit ausgeschlossen; Alarm im Gesundheits-Check; Ursachenanalyse |
 | 02.11.2026 | 0.6 | Rückblick 30 statt 10 Minuten (D1); Analyse fehlender Echtzeit |
 | 02.11.2026 | 0.6 | Fahrt-Identität ohne `serviceId` (Endstand v2, neu berechnet); Abfahrten ohne Echtzeit getrennt ausgewiesen |

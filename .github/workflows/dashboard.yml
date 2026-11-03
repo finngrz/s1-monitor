@@ -60,7 +60,7 @@ jobs:
           fi
           mkdir -p site
           python auswertung/aggregieren.py --endstand daten/endstand --ausgabe site/daten
-          cp dashboard/index.html site/
+          cp dashboard/index.html dashboard/live.html site/
           echo "bereit=ja" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-pages-artifact@v3
