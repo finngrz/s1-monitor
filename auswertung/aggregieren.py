@@ -33,6 +33,10 @@ ABSCHNITTE = {"nachts": (0, 4), "frueh": (4, 6), "morgens": (6, 9), "tagsueber":
 STARTBAHNHOEFE = {"Wedel", "Poppenbüttel", "Hamburg Airport (Flughafen)"}  # vor der Abfahrt immer „pünktlich“
 D1_KORREKTUR_AB = "2026-10-27T10:35:00Z"  # ab hier: Verspätung inkl. Korrekturen nach der Abfahrt (Rückblick)
 MIN_UMSTIEG_S = 180
+# Datenlage: Stunden, in denen die Schnittstelle für zu viele S1-Abfahrten keinen Verspätungswert geliefert hat,
+# fließen nicht in die Statistik ein (sonst würden fehlende Werte das Ergebnis verzerren). Rohdaten bleiben erhalten.
+MAX_OHNE_ECHTZEIT = 0.25
+MIN_ABFAHRTEN_STUNDE = 30
 
 
 def stationsreihenfolge() -> list[str]:
@@ -95,6 +99,33 @@ def vorbereiten(endstand: pd.DataFrame, reihenfolge: list[str]) -> pd.DataFrame:
     s = (s.assign(_hat=s["verspaetung_s"].notna() | s["ausfall"]).sort_values(["_hat", "soll_utc"], ascending=[False, True])
          .drop_duplicates(["abfrage_station", "soll_utc", "richtung_gruppe"]).drop(columns="_hat").sort_values("soll_utc"))
     return s
+
+
+def echtzeit_qualitaet(s: pd.DataFrame) -> pd.DataFrame:
+    """Je Tag und Stunde: Zahl der S1-Abfahrten (ohne Startbahnhöfe) und Anteil ohne Verspätungswert."""
+    b = s[~s["abfrage_station"].isin(STARTBAHNHOEFE)]
+    ohne = b["verspaetung_s"].isna() & ~b["ausfall"]
+    q = (b.assign(ohne=ohne).groupby(["datum", "stunde"]).agg(n=("ohne", "size"), ohne=("ohne", "sum")).reset_index())
+    q["anteil_ohne"] = q["ohne"] / q["n"]
+    q["ausgeschlossen"] = (q["n"] >= MIN_ABFAHRTEN_STUNDE) & (q["anteil_ohne"] > MAX_OHNE_ECHTZEIT)
+    return q
+
+
+def ohne_schwache_stunden(s: pd.DataFrame, q: pd.DataFrame) -> pd.DataFrame:
+    weg = q.loc[q["ausgeschlossen"], ["datum", "stunde"]]
+    if weg.empty:
+        return s
+    m = s.merge(weg.assign(_weg=True), on=["datum", "stunde"], how="left")
+    return s[m["_weg"].isna().to_numpy()]
+
+
+def datenlage_meta(q: pd.DataFrame) -> dict:
+    tage = []
+    for datum, g in q.groupby("datum"):
+        tage.append({"datum": datum, "anteil_ohne": round(float(g["ohne"].sum() / g["n"].sum()), 4),
+                     "ausgeschlossene_stunden": [int(h) for h in g.loc[g["ausgeschlossen"], "stunde"]]})
+    return {"max_ohne_echtzeit": MAX_OHNE_ECHTZEIT, "min_abfahrten_stunde": MIN_ABFAHRTEN_STUNDE,
+            "stunden_ausgeschlossen": int(q["ausgeschlossen"].sum()), "stunden_gesamt": int(len(q)), "tage": tage}
 
 
 def abschnitte_entlang(s: pd.DataFrame, reihenfolge: list[str]) -> dict:
@@ -189,6 +220,8 @@ def main() -> int:
     endstand = pd.concat([pd.read_parquet(d) for d in dateien], ignore_index=True)
     reihenfolge = stationsreihenfolge()
     s = vorbereiten(endstand, reihenfolge)
+    lage = echtzeit_qualitaet(s)
+    s = ohne_schwache_stunden(s, lage)
     puenktlich_basis = s[~s["abfrage_station"].isin(STARTBAHNHOEFE)]
 
     qualitaet = []
@@ -212,6 +245,7 @@ def main() -> int:
         "prognose": prognose_vs_realitaet(s),
         "pendel": pendelweg(endstand, s, Path(args.fahrplan)),
         "qualitaet": qualitaet,
+        "datenlage": datenlage_meta(lage),
     }
     aus = Path(args.ausgabe)
     aus.mkdir(parents=True, exist_ok=True)

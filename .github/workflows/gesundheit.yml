@@ -54,6 +54,7 @@ jobs:
             /protokoll/${{ steps.tage.outputs.vor2 }}/
             /endstand/*/${{ steps.tage.outputs.vor2 }}.parquet
             /protokoll/${{ steps.tage.outputs.gestern }}/
+            /endstand/*/${{ steps.tage.outputs.gestern }}.parquet
             /protokoll/${{ steps.tage.outputs.heute }}/
 
       - name: Prüfen

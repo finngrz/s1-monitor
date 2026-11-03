@@ -66,3 +66,18 @@ def test_kompletter_lauf(tmp_path):
     # keine Einzelfahrten im Ergebnis: keine Fahrt-Kennungen, keine Soll-Zeiten
     text = json.dumps(d)
     assert "service_id" not in text and "07:00:00" not in text
+
+
+def test_stunden_ohne_echtzeit_werden_ausgeschlossen():
+    z = []
+    for i in range(40):  # 07 Uhr: 40 Abfahrten, davon 20 ohne Wert -> ausgeschlossen
+        z.append(zeile("Barmbek", f"2026-11-03T06:{i:02d}:00", None if i % 2 else 1, service=i))
+    for i in range(40):  # 08 Uhr: vollständig
+        z.append(zeile("Barmbek", f"2026-11-03T07:{i:02d}:00", 2, service=100 + i))
+    s = ag.vorbereiten(pd.DataFrame(z), ag.stationsreihenfolge())
+    q = ag.echtzeit_qualitaet(s)
+    assert list(q.loc[q.ausgeschlossen, "stunde"]) == [7]
+    rest = ag.ohne_schwache_stunden(s, q)
+    assert set(rest.stunde) == {8} and len(rest) == 40
+    meta = ag.datenlage_meta(q)
+    assert meta["stunden_ausgeschlossen"] == 1 and meta["tage"][0]["ausgeschlossene_stunden"] == [7]

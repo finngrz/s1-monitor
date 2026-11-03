@@ -1,6 +1,6 @@
 # Methodik
 
-Version 0.6 · Stand 02.11.2026
+Version 0.7 · Stand 03.11.2026
 
 Grundsatz: Rohdaten werden unverändert gespeichert. Alle Definitionen werden erst bei der
 Auswertung angewendet und können daher geändert werden, ohne Daten zu verlieren. Jede
@@ -89,15 +89,31 @@ mit ausgewiesen. Ursache offen (fehlende Echtzeit im Datenfeed oder nicht verkeh
 02.11. zählt der Sammler je Abfrage, wie viele S1-Züge der nächsten 20 Minuten ohne Wert geliefert werden
 (Tageswert in `ergebnisse/datenqualitaet.csv`, Spalte `s1_ohne_echtzeit`).
 
-**Analyse 02.11.2026:** Am Sammler liegt es nicht: Jede Station wurde lückenlos alle 60 Sekunden
-abgefragt, und jede vom Sammler gemeldete Änderung ist gespeichert (Protokoll und Rohdaten stimmen
-zeilengenau überein). Der Anteil ohne Wert springt am 28.10. gegen Mittag von 0–20 % auf 50–65 % je Stunde,
-ohne Änderung an unserem Code; am Morgen des 02.11. sinkt er auf 10–35 %. Zerlegung (29.10.–01.11.,
-je Station und Zug): rund 13 Prozentpunkte entfallen auf Züge, deren Echtzeit erst unterwegs einsetzt
-(Beispiel: S1 ab Flughafen 0:12 am 29.10., erste Echtzeit um 0:32 für alle folgenden Stationen; die
-bereits passierten Halte bekommen keinen Wert mehr), rund 5 Punkte auf Lücken mitten in der Fahrt,
-rund 16 Punkte auf Züge ganz ohne Echtzeit. Gegenmaßnahme ab 02.11.: Der Rückblick wird von 10 auf 30
-Minuten verlängert, damit nachträglich gelieferte Werte für bereits passierte Halte noch erfasst werden.
+**Analyse 03.11.2026 (ersetzt die erste Einschätzung vom 02.11.):** Am Sammler liegt es nicht: Jede
+Station wurde lückenlos alle 60 Sekunden abgefragt, Protokoll und Rohdaten stimmen zeilengenau überein,
+und der Einbruch liegt mitten in einem Sammel-Lauf ohne Codeänderung. Entscheidend ist, *wann* die
+Schnittstelle den ersten Verspätungswert eines Zuges liefert (S1 ohne Startbahnhöfe):
+
+| Zeitraum | Wert ≥ 20 min vor Abfahrt | erst nach Abfahrt | nie |
+| --- | --- | --- | --- |
+| 26.10. abends, 27.10. bis 14 Uhr | ~90 % | ~1 % | 0–9 % |
+| ab 27.10. ca. 15 Uhr bis 01.11. | 16–37 % | 12–19 % | 12–46 % |
+| 02.11. vormittags | 43 % | 16 % | 13 % |
+| ab 02.11. nachmittags | 45–56 % | 15–19 % | 7 % |
+
+Bis 27.10. mittags lieferte die Schnittstelle für fast jeden Zug schon eine Stunde vorher einen Wert.
+Ab 27.10. gegen 15 Uhr kommen Werte offenbar erst, wenn der Zug unterwegs ist, und für viele Züge gar
+nicht. Ursache liegt bei der Datenlieferung an die Schnittstelle (von außen nicht feststellbar). Ab
+02.11. wurde es wieder deutlich besser, schon vor unserer Änderung. Der längere Rückblick (30 statt
+10 Minuten) bringt zusätzlich rund 5 Prozentpunkte. Am schwächsten bleiben die ersten Halte nach dem
+Startbahnhof Poppenbüttel (Wellingsbüttel, Kornweg, Hoheneichen: 11–13 % ohne Wert).
+
+**Regel ab 03.11.2026:** Stunden, in denen für mehr als 25 % der S1-Abfahrten (mindestens 30 Abfahrten)
+kein Wert vorliegt, gehen in keine Statistik ein; das Dashboard weist sie aus. Die Rohdaten bleiben
+vollständig erhalten, die Regel lässt sich also jederzeit ändern. Die Erhebung wird bewusst nicht
+pausiert: Auch in schwachen Stunden liefert sie die vorhandenen Werte und belegt die Datenlage.
+Der Gesundheits-Check schlägt Alarm (E-Mail), wenn an einem Tag mehr als 15 % ohne Wert sind oder
+mindestens 3 Stunden ausgeschlossen werden.
 
 **Offener Punkt:** Rund 13 % der S1-Soll-Zeiten aus der Schnittstelle finden sich nicht im
 Open-Data-Fahrplan (z. B. zusätzliche Abfahrten Richtung Wedel um :05/:15). Das bestand schon vor dem
@@ -107,6 +123,7 @@ Rückblick und wird in Stufe 3 geklärt (abweichende Fahrplanversion, Zusatzfahr
 
 | Datum | Version | Änderung |
 | --- | --- | --- |
+| 03.11.2026 | 0.7 | Stunden mit > 25 % ohne Echtzeit ausgeschlossen; Alarm im Gesundheits-Check; Ursachenanalyse |
 | 02.11.2026 | 0.6 | Rückblick 30 statt 10 Minuten (D1); Analyse fehlender Echtzeit |
 | 02.11.2026 | 0.6 | Fahrt-Identität ohne `serviceId` (Endstand v2, neu berechnet); Abfahrten ohne Echtzeit getrennt ausgewiesen |
 | 27.10.2026 | 0.5 | D1 neu: letzter Stand inkl. Korrekturen nach der Abfahrt; Endstand-Tabelle; Monatsarchive |

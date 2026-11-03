@@ -78,6 +78,27 @@ def pruefe(protokoll: pd.DataFrame, tag, jetzt_utc: datetime, stationen: int) ->
     return kennzahlen, probleme
 
 
+MAX_OHNE_ECHTZEIT_TAG = 0.15
+MAX_SCHWACHE_STUNDEN = 3
+
+
+def datenlage_pruefen(endstand: pd.DataFrame, probleme: list[str]) -> dict:
+    """Gleiche Regel wie im Dashboard: Stunden mit zu vielen Abfahrten ohne Verspätungswert zählen nicht."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "auswertung"))
+    import aggregieren as ag  # noqa: PLC0415
+
+    q = ag.echtzeit_qualitaet(ag.vorbereiten(endstand, ag.stationsreihenfolge()))
+    if q.empty:
+        probleme.append("Endstand von gestern enthält keine S1-Abfahrten")
+        return {}
+    anteil = float(q["ohne"].sum() / q["n"].sum())
+    schwach = [int(h) for h in q.loc[q["ausgeschlossen"], "stunde"]]
+    if anteil > MAX_OHNE_ECHTZEIT_TAG or len(schwach) >= MAX_SCHWACHE_STUNDEN:
+        probleme.append(f"Echtzeitdaten unvollständig: {anteil:.0%} der S1-Abfahrten ohne Verspätungswert, "
+                        f"{len(schwach)} Stunde(n) aus der Statistik ausgeschlossen ({schwach})")
+    return {"endstand_ohne_wert": round(anteil, 4), "stunden_ausgeschlossen": len(schwach)}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--daten", required=True)
@@ -97,6 +118,12 @@ def main() -> int:
     endstand = Path(args.daten, "endstand", vor2.isoformat()[:7], f"{vor2.isoformat()}.parquet")
     if Path(args.daten, "protokoll", vor2.isoformat()).exists() and not endstand.exists():
         probleme.append(f"Pflege läuft nicht: Endstand für {vor2} fehlt")
+    # Datenlage gestern: Liefert die Schnittstelle für genug S1-Abfahrten Verspätungswerte?
+    endstand_gestern = Path(args.daten, "endstand", tag.isoformat()[:7], f"{tag.isoformat()}.parquet")
+    if endstand_gestern.exists():
+        kennzahlen.update(datenlage_pruefen(pd.read_parquet(endstand_gestern), probleme))
+    else:
+        print(f"::notice title=Datenlage::Endstand für {tag} noch nicht gebaut, Datenlage wird morgen nachgeholt")
     if args.test_fehler:
         probleme.append("Test: absichtlich ausgelöster Fehler, um die E-Mail-Benachrichtigung zu prüfen")
     kennzahlen["probleme"] = " | ".join(probleme)
