@@ -92,8 +92,9 @@ def gruende(roh: str) -> list[str]:
     return [a.get("value") for a in attribute if "REALTIME_REASON" in (a.get("types") or []) and a.get("value")]
 
 
-ENDSTAND_VERSION = 3  # 2: Züge über Station, Linie, Soll-Zeit und Richtung erkannt (serviceId wechselt)
+ENDSTAND_VERSION = 4  # 2: Züge über Station, Linie, Soll-Zeit und Richtung erkannt (serviceId wechselt)
 #                       3: zusätzlich Prognose-Merkmale (Anzeige und Lage der Linie je Vorlauf)
+#                       4: veraltete Antworten der Schnittstelle (Flattern) verworfen, Spalte „verworfen“
 
 
 def stationsreihenfolge() -> list[str]:
@@ -124,22 +125,23 @@ def endstand_tag(beobachtungen: pd.DataFrame, tag: date, reihenfolge: list[str] 
     df["beobachtet_utc"] = pd.to_datetime(df["beobachtet_utc"], utc=True)
     df["soll_utc"] = pd.to_datetime(df["soll_utc"], utc=True)
     df["richtung_gruppe"] = richtung_gruppe(df, reihenfolge or stationsreihenfolge())
-    alle = df  # inkl. Nachbartage: für die Lage der Linie kurz nach Mitternacht
-    df = df[df["soll_utc"].dt.tz_convert(BERLIN).dt.date == tag].copy()
-    if df.empty:
-        return pd.DataFrame()
     df["fahrt"] = pd.util.hash_pandas_object(
         df[["abfrage_station", "linie", "soll_utc", "richtung_gruppe"]], index=False).astype("uint64").map("{:016x}".format)
     df = df.sort_values("beobachtet_utc", kind="stable")
     df["ausfall"] = df["ausfall"].fillna(False).astype(bool)
+    df = bereinigen(df)
+    alle = df  # inkl. Nachbartage: für die Lage der Linie kurz nach Mitternacht
+    df = df[df["soll_utc"].dt.tz_convert(BERLIN).dt.date == tag].copy()
+    if df.empty:
+        return pd.DataFrame()
 
-    letzte = df.drop_duplicates("fahrt", keep="last").set_index("fahrt")
+    letzte = df.drop_duplicates("fahrt", keep="last").set_index("fahrt")  # Ausfall dort bereits bereinigt
     mit_wert = df[df["verspaetung_s"].notna()]
     letzter_wert = mit_wert.drop_duplicates("fahrt", keep="last").set_index("fahrt")
     vor = mit_wert[mit_wert["beobachtet_utc"] <= mit_wert["soll_utc"] + pd.to_timedelta(mit_wert["verspaetung_s"], unit="s")]
     vor = vor.drop_duplicates("fahrt", keep="last").set_index("fahrt")
     zaehl = df.groupby("fahrt").agg(beobachtungen=("stand", "size"), erste_beobachtung_utc=("beobachtet_utc", "min"),
-                                    kennungen=("service_id", "nunique"))
+                                    kennungen=("service_id", "nunique"), verworfen=("verworfen", "sum"))
     ziele = df.groupby("fahrt")["richtung"].agg(lambda x: " | ".join(dict.fromkeys(x.dropna())))
     g = df[["fahrt", "roh"]].copy()
     g["g"] = g["roh"].map(gruende)
@@ -161,6 +163,28 @@ def endstand_tag(beobachtungen: pd.DataFrame, tag: date, reihenfolge: list[str] 
     erg = prognose_merkmale(alle, erg)
     return erg.reset_index().rename(columns={"fahrt": "schluessel"}).sort_values(
         ["soll_utc", "abfrage_station", "linie"], kind="stable")
+
+
+def bereinigen(df: pd.DataFrame) -> pd.DataFrame:
+    """Verwirft veraltete Antworten der Schnittstelle (Flattern, Regel in lage.py).
+
+    Erwartet nach beobachtet_utc sortierte Zeilen mit Spalte `fahrt`. Verworfene Verspätungswerte werden
+    leer gesetzt, eine fortgeltende Ausfallmeldung bleibt stehen; Spalte `verworfen` markiert die Zeilen.
+    Die Rohdaten selbst bleiben unverändert.
+    """
+    df = df.copy()
+    v = df["verspaetung_s"].to_numpy(dtype="float64", na_value=np.nan).copy()
+    a = df["ausfall"].to_numpy(dtype=bool).copy()
+    weg = np.zeros(len(df), dtype=bool)
+    stand: dict = {}
+    for i, f in enumerate(df["fahrt"].to_numpy()):
+        pv, pa = stand.get(f, (None, False))
+        nv, na, verworfen = lg.plausibel(pv, pa, None if np.isnan(v[i]) else v[i], bool(a[i]))
+        v[i] = np.nan if nv is None else nv
+        a[i], weg[i] = na, verworfen
+        stand[f] = (nv if nv is not None else pv, na)
+    df["verspaetung_s"], df["ausfall"], df["verworfen"] = v, a, weg
+    return df
 
 
 def prognose_merkmale(alle: pd.DataFrame, erg: pd.DataFrame) -> pd.DataFrame:

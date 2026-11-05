@@ -1,6 +1,6 @@
 # Methodik
 
-Version 0.8 · Stand 03.11.2026
+Version 0.9 · Stand 05.11.2026
 
 Grundsatz: Rohdaten werden unverändert gespeichert. Alle Definitionen werden erst bei der
 Auswertung angewendet und können daher geändert werden, ohne Daten zu verlieren. Jede
@@ -115,6 +115,17 @@ pausiert: Auch in schwachen Stunden liefert sie die vorhandenen Werte und belegt
 Der Gesundheits-Check schlägt Alarm (E-Mail), wenn an einem Tag mehr als 15 % ohne Wert sind oder
 mindestens 3 Stunden ausgeschlossen werden.
 
+**Flattern (ab 05.11.2026, Endstand-Version 4):** Seit dem 05.11. morgens antwortet die Schnittstelle
+abwechselnd aus einem aktuellen und einem veralteten Stand: Ganze Antworten einer Station springen
+minütlich, z. B. Ohlsdorf 17:39 am 05.11.: +5, 0, +5, 0, +6, 0, +6, 0; ebenso „fällt aus“ und „fährt“.
+Betroffen waren am 05.11. 42 % der S1-Abfahrten (vorher 1–5 % je Tag). Regel: Ein Sprung von mindestens
+2 Minuten direkt auf 0 gilt als veraltete Antwort und wird verworfen; nach einer Ausfallmeldung gilt
+„fährt“ erst bei einer Verspätung über 0. Die Rohdaten bleiben unverändert, verworfene Beobachtungen
+werden je Abfahrt gezählt (Spalte `verworfen`). Wirkung auf die Tagesstatistik gering (04.11.:
+Pünktlichkeit < 3 min 52,6 % ohne bzw. 51,9 % mit Regel), weil die Endstände meist aus Antworten nach
+der Abfahrt stammen; für die Live-Anzeige ist die Regel wesentlich. Anteil je Tag im Gesundheits-Check
+(`anteil_flattern`). Nach den Nutzungsbedingungen an die Hochbahn zu melden.
+
 **Offener Punkt (05.11.2026):** Datenlücken können mit Störungen zusammenfallen (04.11., 7 Uhr: 22 % ohne
 Wert bei Ø 5,4 min Verspätung und 15 Ausfällen). Läge eine solche Stunde über 25 %, würde die
 Ausschlussregel ausgerechnet eine gestörte Stunde herausnehmen. Seit 03.11. ist keine Stunde betroffen.
@@ -179,6 +190,7 @@ Passwort ist nur für den privaten Gebrauch bestimmt.
 
 | Datum | Version | Änderung |
 | --- | --- | --- |
+| 05.11.2026 | 0.9 | Flattern der Schnittstelle erkannt und bereinigt (Endstand Version 4); Poppenbüttel-Teil geprüft; freie Streckenwahl |
 | 03.11.2026 | 0.8 | Live-Seite mit Kurzfrist-Prognose; Endstand Version 3 (Prognose-Merkmale) |
 | 03.11.2026 | 0.7 | Stunden mit > 25 % ohne Echtzeit ausgeschlossen; Alarm im Gesundheits-Check; Ursachenanalyse |
 | 02.11.2026 | 0.6 | Rückblick 30 statt 10 Minuten (D1); Analyse fehlender Echtzeit |

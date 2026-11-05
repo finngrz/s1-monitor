@@ -179,3 +179,12 @@ def test_endstand_wechselnde_kennung_und_fluegelung():
     assert z.richtung_gruppe == "ost"
     assert z.verspaetung_s == 480  # letzter bekannter Wert, nicht der spätere fehlende
     assert z.kennungen == 2 and z.endstand_version == pflege.ENDSTAND_VERSION
+
+
+def test_bereinigen_flattern():
+    import numpy as np
+    df = pd.DataFrame({"fahrt": ["a"] * 5 + ["b"] * 3, "verspaetung_s": [0, 300, 0, 360, 0, 120, 60, 0],
+                       "ausfall": [False] * 8})
+    erg = pflege.bereinigen(df)
+    assert list(erg["verworfen"]) == [False, False, True, False, True, False, False, False]
+    assert np.isnan(erg["verspaetung_s"].iloc[4]) and erg["verspaetung_s"].iloc[7] == 0

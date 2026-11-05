@@ -27,6 +27,25 @@ LAGE_KLASSEN = [("<1", -10**6, 1), ("1-3", 1, 3), ("3-6", 3, 6), (">6", 6, 10**6
 MIN_FAELLE = 30  # weniger Fälle in einer Zelle: auf gröbere Zelle ausweichen
 
 
+# Flattern (beobachtet ab 05.11.2026): Die Schnittstelle antwortet abwechselnd aus einem aktuellen und
+# einem veralteten Stand. Dann springt dieselbe Abfahrt minütlich z. B. zwischen +5 und 0 oder zwischen
+# „fällt aus“ und „fährt“. Regel: Ein Sprung von mindestens 2 Minuten Verspätung direkt auf 0 gilt als
+# veraltete Antwort und wird ignoriert (echtes Aufholen geschieht schrittweise). Nach einer
+# Ausfallmeldung gilt „fährt“ erst, wenn wieder eine Verspätung über 0 gemeldet wird.
+FLATTERN_AB_S = 120
+
+
+def plausibel(vorher_v: float | None, vorher_ausfall: bool, v: float | None, ausfall: bool) -> tuple[float | None, bool, bool]:
+    """Bereinigter Stand (Verspätung, Ausfall) und ob die neue Beobachtung als veraltet verworfen wurde."""
+    if ausfall:
+        return v, True, False
+    if vorher_ausfall and (v is None or v == 0):
+        return None, True, True
+    if v == 0 and vorher_v is not None and vorher_v >= FLATTERN_AB_S:
+        return None, False, True
+    return v, False, False
+
+
 def anzeige_klasse(minuten: float | None) -> str:
     m = 0 if minuten is None or minuten != minuten else max(0, round(minuten))
     for name, a, b in ANZEIGE_KLASSEN:

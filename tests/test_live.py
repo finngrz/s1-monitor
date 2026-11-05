@@ -70,3 +70,14 @@ def test_prognose_tabelle_aus_endstand():
     f = pt.faelle(pd.DataFrame(zeilen))
     zellen = pt.zellen_berechnen(f)
     assert zellen["unterwegs|10|1-2|>6"] == {"n": 40, "erwartet": 5.0, "von": 5.0, "bis": 5.0, "anteil_ab5": 1.0}
+
+
+def test_flattern_wird_verworfen():
+    assert lg.plausibel(300, False, 0, False) == (None, False, True)     # +5 -> 0: veraltet
+    assert lg.plausibel(60, False, 0, False) == (0, False, False)        # +1 -> 0: echtes Aufholen
+    assert lg.plausibel(None, True, 0, False) == (None, True, True)      # Ausfall -> „fährt, 0“: veraltet
+    assert lg.plausibel(None, True, 240, False) == (240, False, False)   # Ausfall -> +4: fährt doch
+    L = LiveStand(CFG["live"], REIHE, {})
+    for v in (5, 0, 6, 0):
+        L.aufnehmen(zeile("Barmbek", 3, v))
+    assert next(iter(L.werte.values()))["v"] == 360

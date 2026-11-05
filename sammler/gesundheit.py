@@ -96,7 +96,10 @@ def datenlage_pruefen(endstand: pd.DataFrame, probleme: list[str]) -> dict:
     if anteil > MAX_OHNE_ECHTZEIT_TAG or len(schwach) >= MAX_SCHWACHE_STUNDEN:
         probleme.append(f"Echtzeitdaten unvollständig: {anteil:.0%} der S1-Abfahrten ohne Verspätungswert, "
                         f"{len(schwach)} Stunde(n) aus der Statistik ausgeschlossen ({schwach})")
-    return {"endstand_ohne_wert": round(anteil, 4), "stunden_ausgeschlossen": len(schwach)}
+    s1 = endstand[(endstand["linie"] == "S1") & (endstand["verkehrsmittel"] == "TRAIN")]
+    flattern = float((s1["verworfen"] > 0).mean()) if "verworfen" in s1 and len(s1) else None
+    return {"endstand_ohne_wert": round(anteil, 4), "stunden_ausgeschlossen": len(schwach),
+            "anteil_flattern": None if flattern is None else round(flattern, 4)}
 
 
 LIVE_MAX_ALTER_MIN = 15

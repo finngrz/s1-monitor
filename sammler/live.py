@@ -76,9 +76,11 @@ class LiveStand:
             return
         schl = (zeile["abfrage_station"], zeile["soll_utc"], g)
         d = self.werte.setdefault(schl, {"v": None, "ausfall": False, "ziele": set()})
-        if zeile.get("verspaetung_s") is not None:
-            d["v"] = zeile["verspaetung_s"]  # zuletzt bekannter Wert, wie in der Endstand-Tabelle
-        d["ausfall"] = bool(zeile.get("ausfall"))
+        # veraltete Antworten (Flattern) verwerfen, gleiche Regel wie in der Endstand-Tabelle
+        v, ausfall, _ = lg.plausibel(d["v"], d["ausfall"], zeile.get("verspaetung_s"), bool(zeile.get("ausfall")))
+        if v is not None:
+            d["v"] = v  # zuletzt bekannter Wert, wie in der Endstand-Tabelle
+        d["ausfall"] = ausfall
         if zeile.get("richtung"):
             d["ziele"].add(zeile["richtung"])
 
