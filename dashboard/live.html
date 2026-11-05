@@ -190,7 +190,9 @@ async function laden() {
     zeigen(d);
   } catch (e) {
     $("fehler").hidden = false;
-    $("fehler").textContent = "Live-Stand nicht erreichbar (" + e.message + "). Neuer Versuch gleich.";
+    $("fehler").textContent = e.message === "HTTP 404"
+      ? "Noch kein Live-Stand vorhanden. Er entsteht, sobald ein Sammel-Lauf mit hinterlegtem Passwort läuft (spätestens 5,5 Stunden nach dem Anlegen des Passworts)."
+      : "Live-Stand nicht erreichbar (" + e.message + "). Neuer Versuch gleich.";
   }
 }
 
