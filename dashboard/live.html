@@ -57,6 +57,17 @@
   footer p { margin: 6px 0; }
   a { color: var(--s1); }
   [hidden] { display: none !important; }
+  .wahl { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: end; }
+  .wahl label { display: grid; gap: 2px; font-size: 12px; color: var(--leise); }
+  .wahl select { font: inherit; font-size: 15px; padding: 8px 6px; border-radius: 8px; border: 1px solid var(--rand);
+                 background: var(--bg); color: var(--text); width: 100%; min-width: 0; }
+  .tausch { height: 40px; width: 40px; padding: 0; font-size: 18px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip { border-radius: 99px; padding: 4px 10px; font-size: 13px; border: 1px solid var(--rand); background: var(--bg); color: var(--text); }
+  .chip.aktiv { border-color: var(--s1); color: var(--s1); font-weight: 600; }
+  .chip .weg { margin-left: 6px; color: var(--leise); }
+  .an { font-size: 13px; }
+  .an b { font-size: 15px; }
   .i { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; padding: 0;
        margin-left: 4px; border-radius: 50%; border: 1px solid var(--leise); background: transparent; color: var(--leise);
        font: italic 600 12px/1 Georgia, serif; vertical-align: 1px; cursor: pointer; }
@@ -96,6 +107,14 @@
   <p class="fehler" id="fehler" hidden></p>
 
   <div id="inhalt" hidden>
+    <section class="karte" id="wahl-karte">
+      <div class="wahl">
+        <label>Von<select id="von" aria-label="Startstation"></select></label>
+        <button class="tausch" id="tausch" aria-label="Start und Ziel tauschen">⇄</button>
+        <label>Nach<select id="nach" aria-label="Zielstation"></select></label>
+      </div>
+      <div class="chips" id="favoriten"></div>
+    </section>
     <div class="lage" id="lage"></div>
     <div id="meldungen"></div>
     <div id="ansichten"></div>
@@ -137,7 +156,8 @@ async function schluessel(pw, salz, runden) {
 }
 async function entschluesseln(paket, pw) {
   const k = await schluessel(pw, paket.salz, paket.runden);
-  const klar = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(paket.iv) }, k, b64(paket.daten));
+  let klar = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(paket.iv) }, k, b64(paket.daten));
+  if (paket.gzip) klar = await new Response(new Blob([klar]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
   return JSON.parse(new TextDecoder().decode(klar));
 }
 
@@ -169,9 +189,11 @@ function zeigen(d) {
       <span class="zustand z-${lageStufe(m)}">${lageText(m)}${tend}</span></div>`;
   }).join("");
   $("meldungen").innerHTML = (d.meldungen || []).map((t) => `<div class="meldung">⚠ ${t.replace(/[<>&]/g, "")}<button class="i" data-info="meldung" aria-label="Erklärung: Störungsmeldung">i</button></div>`).join("");
-  $("ansichten").innerHTML = d.ansichten.map((a, ai) => {
+  $("wahl-karte").hidden = !(d.stationen && F);
+  if (d.stationen && F) { strecke(d); } else $("ansichten").innerHTML = (d.stationen ? "" : `<p class="leise">Die freie Wahl von Start und Ziel erscheint ab dem nächsten Sammel-Lauf.</p>`) + d.ansichten.map((a, ai) => {
     const zeilen = a.abfahrten.length ? a.abfahrten.map((x, xi) => {
       const app = x.ausfall ? "fällt aus" : x.app_min == null ? "–" : minuten(x.app_min);
+      zeilenDaten[`${ai}-${xi}`] = { station: a.station, x };
       const knopf = x.ausfall ? "" : `<button class="i" data-abf="${ai}-${xi}" aria-label="Grundlage dieser Erwartung">i</button>`;
       const erw = x.ausfall ? "" : `<span class="erw">${minuten(x.erwartet_min)} min</span>${knopf}`
         + (x.von_min != null && x.bis_min > x.von_min ? `<div class="spanne">meist ${x.von_min}–${x.bis_min} min</div>` : "");
@@ -189,6 +211,110 @@ function zeigen(d) {
   alter();
 }
 
+// ---------------------------------------------------------------- Strecke wählen
+let F = null, zeilenDaten = {};
+const FAV_SPEICHER = "s1live_favoriten", WAHL_SPEICHER = "s1live_wahl";
+const STANDARD_FAV = [["Poppenbüttel", "Stadthausbrücke"], ["Ohlsdorf", "Stadthausbrücke"], ["Stadthausbrücke", "Poppenbüttel"]];
+const lesen = (k, ersatz) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? ersatz; } catch { return ersatz; } };
+const schreiben = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+let favoriten = lesen(FAV_SPEICHER, STANDARD_FAV), wahl = lesen(WAHL_SPEICHER, STANDARD_FAV[0]);
+const kurz = (n) => n.replace(" (Flughafen)", "").replace(/ \(.*\)/, "");
+
+function alleStationen() { return [...F.stamm, ...F.ast_poppenbuettel, ...F.ast_flughafen]; }
+function ort(st) {
+  if (F.stamm.includes(st)) return { ast: null, i: F.stamm.indexOf(st) };
+  if (F.ast_poppenbuettel.includes(st)) return { ast: "p", i: F.ast_poppenbuettel.indexOf(st) };
+  if (F.ast_flughafen.includes(st)) return { ast: "a", i: 0 };
+  return null;
+}
+// Halte von start bis ziel in Fahrtrichtung, Richtung "west"/"ost", oder Fehlertext
+function pfad(start, ziel) {
+  const a = ort(start), b = ort(ziel), S = F.stamm, ast = (x) => (x === "p" ? F.ast_poppenbuettel : F.ast_flughafen);
+  if (!a || !b || start === ziel) return { fehler: "Bitte zwei verschiedene Stationen wählen." };
+  if (a.ast && b.ast && a.ast !== b.ast) return { fehler: "Zwischen den Ästen nach Poppenbüttel und zum Flughafen muss man in Ohlsdorf umsteigen. Bitte die Strecke in zwei Teilen abfragen." };
+  if (!a.ast && !b.ast) return a.i < b.i ? { g: "ost", halte: S.slice(a.i, b.i + 1) } : { g: "west", halte: S.slice(b.i, a.i + 1).reverse() };
+  if (!a.ast) return { g: "ost", halte: [...S.slice(a.i), ...ast(b.ast).slice(0, b.i + 1)] };
+  if (!b.ast) return { g: "west", halte: [...ast(a.ast).slice(0, a.i + 1).reverse(), ...S.slice(b.i).reverse()] };
+  const A = ast(a.ast);
+  return a.i < b.i ? { g: "ost", halte: A.slice(a.i, b.i + 1) } : { g: "west", halte: A.slice(b.i, a.i + 1).reverse() };
+}
+// Fährt ein Zug mit diesen Zielen von start bis ziel?
+function erreicht(ziele, start, ziel, g) {
+  const enden = ziele.split(/ \| | \/ /).map((z) => z.trim()).filter((z) => ort(z));
+  return enden.some((t) => { const p = pfad(start, t); return !p.fehler && p.g === g && p.halte.includes(ziel); });
+}
+const sekunden = (halte) => halte.slice(1).reduce((s, h, k) => s + (F.segment_s[halte[k] + "|" + h] ?? 120), 0);
+// bis zur Ankunft am letzten Halt: Abfahrt-zu-Abfahrt für alle Abschnitte außer dem letzten, dort Abfahrt-zu-Ankunft
+const anSekunden = (halte) => sekunden(halte.slice(0, -1)) + ((F.segment_an_s || {})[halte[halte.length - 2] + "|" + halte[halte.length - 1]] ?? F.segment_s[halte[halte.length - 2] + "|" + halte[halte.length - 1]] ?? 120);
+const hhmm = (d) => d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+
+function ankunft(d, p, eintrag) {
+  const ab = new Date(eintrag[10]), ziel = p.halte[p.halte.length - 1];
+  // Zug am Ziel (bzw. am letzten Halt davor, wenn das Ziel Endstation ist) in den Live-Daten wiederfinden
+  for (const k of [p.halte.length - 1, p.halte.length - 2]) {
+    if (k < 1) break;
+    const halt = p.halte[k], liste = ((d.stationen[halt] || {})[p.g]) || [];
+    const geplant = ab.getTime() + sekunden(p.halte.slice(0, k + 1)) * 1000;
+    // nächstgelegene Planzeit innerhalb von 2 Minuten (zur Hauptverkehrszeit fahren die Züge im 4-/6-Minuten-Wechsel)
+    let treffer = null, best = 2 * 60000 + 1;
+    for (const x of liste) { const abw = Math.abs(new Date(x[10]) - geplant); if (abw < best) { best = abw; treffer = x; } }
+    if (treffer) {
+      const rest = (k === p.halte.length - 1 ? 0 : anSekunden(p.halte.slice(k))) * 1000 - (k === p.halte.length - 1 ? (F.haltezeit_s[ziel] || 0) * 1000 : 0);
+      return { plan: new Date(new Date(treffer[10]).getTime() + rest), erw: treffer[2], quelle: halt };
+    }
+  }
+  return { plan: new Date(ab.getTime() + anSekunden(p.halte) * 1000), erw: eintrag[2], quelle: null };
+}
+
+function wahlSetzen(von, nach) {
+  wahl = [von, nach]; schreiben(WAHL_SPEICHER, wahl);
+  if (letzterStand) zeigen(letzterStand);
+}
+function auswahlAufbauen() {
+  const opt = alleStationen().map((n) => `<option value="${n}">${n}</option>`).join("");
+  $("von").innerHTML = opt; $("nach").innerHTML = opt;
+}
+function strecke(d) {
+  $("von").value = wahl[0]; $("nach").value = wahl[1];
+  const istFav = favoriten.some((f) => f[0] === wahl[0] && f[1] === wahl[1]);
+  $("favoriten").innerHTML = favoriten.map((f, k) => `<button class="chip${f[0] === wahl[0] && f[1] === wahl[1] ? " aktiv" : ""}" data-fav="${k}">${kurz(f[0])} → ${kurz(f[1])}<span class="weg" data-weg="${k}" aria-label="Favorit entfernen">×</span></button>`).join("")
+    + (istFav ? "" : `<button class="chip" id="merken">☆ Strecke merken</button>`);
+  const p = pfad(wahl[0], wahl[1]), ib = (k, n) => `<button class="i" data-info="${k}" aria-label="Erklärung: ${n}">i</button>`;
+  if (p.fehler) { $("ansichten").innerHTML = `<section class="karte"><p>${p.fehler}</p></section>`; return; }
+  const liste = (((d.stationen[wahl[0]] || {})[p.g]) || []).filter((x) => erreicht(x[9], wahl[0], wahl[1], p.g)).slice(0, 8);
+  zeilenDaten = {};
+  const zeilen = liste.length ? liste.map((x, xi) => {
+    const o = { soll: hhmm(new Date(x[10])), app_min: x[1], erwartet_min: x[2], von_min: x[3], bis_min: x[4], anteil_ab5: x[5], faelle: x[6], zelle: x[7], ausfall: !!x[8], lage_min: (d.lage_min || {})[lgZulauf(wahl[0], p.g)] };
+    zeilenDaten["r-" + xi] = { station: wahl[0], x: o };
+    const ampel = o.ausfall ? "ausfall" : o.erwartet_min < 3 ? "gruen" : o.erwartet_min < 6 ? "gelb" : "rot";
+    const app = o.ausfall ? "fällt aus" : o.app_min == null ? "–" : minuten(o.app_min);
+    const erw = o.ausfall ? "" : `<span class="erw">${minuten(o.erwartet_min)}</span><button class="i" data-abf="r-${xi}" aria-label="Grundlage dieser Erwartung">i</button>`
+      + (o.von_min != null && o.bis_min > o.von_min ? `<div class="spanne">meist ${o.von_min}–${o.bis_min}</div>` : "");
+    const an = ankunft(d, p, x), ist = new Date(an.plan.getTime() + Math.max(an.erw || 0, 0) * 60000);
+    const anText = o.ausfall ? "" : an.erw > 0 ? `<b>≈ ${hhmm(ist)}</b><div class="spanne">Plan ${hhmm(an.plan)}</div>` : `<b>${hhmm(an.plan)}</b>`;
+    const tipp = ampel === "rot" ? `<div class="tipp">Alternative prüfen<button class="i" data-info="alternative" aria-label="Erklärung: Alternative prüfen">i</button></div>` : "";
+    return `<tr><td class="zeit">${o.soll}</td><td class="app">${app}</td>
+      <td><span class="punkt p-${ampel}" aria-hidden="true"></span>${erw}${tipp}</td><td class="an">${anText}</td></tr>`;
+  }).join("") : `<tr><td colspan="4" class="leise">Keine passenden Abfahrten in den nächsten 60 Minuten.</td></tr>`;
+  const start = ["Poppenbüttel", "Wedel", "Hamburg Airport (Flughafen)"].includes(wahl[0]);
+  $("ansichten").innerHTML = `<section class="karte"><h2>${wahl[0]} → ${wahl[1]}${start ? ib("startbahnhof", "Startbahnhof") : ""}</h2>
+    <table><thead><tr><th>Ab${ib("plan", "Ab")}</th><th>App${ib("app", "App")}</th><th>Erwartet${ib("erwartet", "Erwartet")}</th><th>Ankunft${ib("ankunft", "Ankunft")}</th></tr></thead><tbody>${zeilen}</tbody></table></section>`;
+}
+function lgZulauf(st, g) { return ["Poppenbüttel", "Wedel", "Hamburg Airport (Flughafen)"].includes(st) ? (g === "west" ? "ost" : "west") : g; }
+
+$("von").addEventListener("change", () => wahlSetzen($("von").value, $("nach").value));
+$("nach").addEventListener("change", () => wahlSetzen($("von").value, $("nach").value));
+$("tausch").addEventListener("click", () => wahlSetzen(wahl[1], wahl[0]));
+$("favoriten").addEventListener("click", (e) => {
+  const weg = e.target.closest("[data-weg]"), fav = e.target.closest("[data-fav]");
+  if (weg) { favoriten.splice(+weg.dataset.weg, 1); schreiben(FAV_SPEICHER, favoriten); return zeigen(letzterStand); }
+  if (fav) return wahlSetzen(...favoriten[+fav.dataset.fav]);
+  if (e.target.id === "merken") { favoriten.push([...wahl]); schreiben(FAV_SPEICHER, favoriten); zeigen(letzterStand); }
+});
+fetch("fahrzeiten.json", { cache: "no-store" }).then((r) => r.ok ? r.json() : null).then((f) => {
+  if (!f) return; F = f; auswahlAufbauen(); if (letzterStand) zeigen(letzterStand);
+}).catch(() => {});
+
 const INFO = {
   stand: ["Stand", `<p>Zeitpunkt, zu dem der Sammler diesen Live-Stand berechnet hat. Er erneuert ihn alle 2 Minuten, die Seite holt ihn alle 90 Sekunden und beim Zurückkehren in die App.</p>
     <p>Grundlage sind die Abfragen, die der Sammler ohnehin macht: jede S1-Station einmal pro Minute bei der hvv-Schnittstelle (Geofox). Ist der Stand älter als 8 Minuten, erscheint eine Warnung.</p>`],
@@ -197,7 +323,10 @@ const INFO = {
     <p><b>Tendenz</b>: Vergleich mit dem Wert von vor 10 Minuten; „steigend“ oder „fallend“ ab einer Minute Unterschied.</p>
     <p>Warum das hilft: Verspätungen pflanzen sich fort. In unseren Daten kamen als pünktlich angezeigte Züge bei gestörter Linie im Mittel rund 5 Minuten zu spät. Das Signal trägt etwa 20–30 Minuten voraus.</p>`],
   meldung: ["Störungsmeldung", `<p>Aktuelle, ungeplante Meldung des hvv, die die S1 betrifft und gerade gültig ist. Abgerufen alle 5 Minuten über die hvv-Schnittstelle. Geplante Bauarbeiten werden hier nicht angezeigt.</p>`],
-  plan: ["Plan", `<p>Abfahrtszeit laut Fahrplan an dieser Station. Gezeigt werden die Abfahrten der nächsten 45 Minuten, die laut letzter Meldung noch nicht abgefahren sind.</p>`],
+  plan: ["Ab (Plan)", `<p>Abfahrtszeit laut Fahrplan an deiner Startstation. Gezeigt werden die Abfahrten der nächsten 60 Minuten, die laut letzter Meldung noch nicht abgefahren sind, und nur Züge, die wirklich bis zu deinem Ziel fahren (z. B. nicht die Züge, die in Ohlsdorf zum Flughafen abbiegen, wenn du nach Poppenbüttel willst).</p>`],
+  ankunft: ["Ankunft", `<p><b>Plan</b>: Ankunftszeit laut Fahrplan. Berechnet aus den typischen Fahrzeiten zwischen den Stationen im offiziellen Fahrplan (hvv Open Data) und, wo möglich, aus der Planzeit desselben Zuges an deinem Ziel.</p>
+    <p><b>≈</b>: erwartete Ankunft = Plan + erwartete Verspätung. Wenn derselbe Zug am Ziel (bzw. am letzten Halt davor) schon in den Live-Daten steht, gilt dessen Erwartung, sonst die an deiner Startstation. Aufholen oder weiteres Verspäten unterwegs ist darin nur enthalten, soweit es sich in den Live-Daten schon zeigt.</p>
+    <p>Die Schnittstelle liefert keine Ankunftszeiten, nur Abfahrten. Die Ankunft ist deshalb immer eine Schätzung, meist auf ±1 Minute genau.</p>`],
   app: ["App", `<p>Die Verspätung, die die hvv-Schnittstelle gerade für diesen Zug meldet, in Minuten. Das ist dieselbe Information wie in der hvv-App.</p>
     <p>„–“ heißt: noch keine Echtzeitangabe. Die App zeigt dann die Planzeit, also „pünktlich“. Die Schnittstelle meldet nur ganze Minuten und nie Frühabfahrten.</p>`],
   erwartet: ["Erwartet", `<p>Was in vergleichbaren Situationen tatsächlich passiert ist. Vergleichbar heißt gleich in vier Merkmalen:</p>
@@ -205,7 +334,7 @@ const INFO = {
     <li>Lage der Linie (unter 1, 1–3, 3–6, über 6 min)</li><li>Halt unterwegs oder Startbahnhof</li></ul>
     <p>Die große Zahl ist der Mittelwert der tatsächlichen Verspätung dieser Fälle, „meist X–Y“ die Spanne, in die 6 von 10 Fällen fielen (20- bis 80-%-Quantil). Gibt es weniger als 30 Fälle, wird eine gröbere Gruppe genommen. Die Erwartung ist nie kleiner als die App-Anzeige.</p>
     <p><b>Farben:</b> grün unter 3 min, gelb 3–5 min, rot ab 6 min oder Ausfall.</p>
-    <p>Tippe auf das i neben einer Erwartung, um die Grundlage genau dieses Zuges zu sehen.</p>`],
+    <p>Die Erwartung gilt für die Abfahrt an deiner Startstation. Tippe auf das i neben einer Erwartung, um die Grundlage genau dieses Zuges zu sehen.</p>`],
   alternative: ["Alternative prüfen", `<p>Erscheint, wenn wir 6 Minuten oder mehr erwarten. Das ist die Schwelle, ab der die S-Bahn selbst einen Zug als unpünktlich zählt.</p>
     <p>Zur Treffsicherheit (geprüft an Tagen, die beim Berechnen nicht verwendet wurden): 10 Minuten vorher erkennt die Seite etwa 4 von 10 stark verspäteten Zügen, die App etwa 2 von 10. Etwa jede vierte Warnung der Seite ist ein Fehlalarm.</p>`],
   startbahnhof: ["Startbahnhof", `<p>Hier beginnen die Züge. Die Schnittstelle meldet für sie vor der Abfahrt praktisch nie eine Verspätung, die Spalte „App“ zeigt deshalb meist „–“.</p>
@@ -239,8 +368,8 @@ document.addEventListener("click", (e) => {
   if (b) {
     e.preventDefault();
     if (b.dataset.abf) {
-      const [ai, xi] = b.dataset.abf.split("-").map(Number), a = letzterStand.ansichten[ai];
-      return infoZeigen(...abfahrtInfo(a, a.abfahrten[xi]));
+      const z = zeilenDaten[b.dataset.abf];
+      return z && infoZeigen(...abfahrtInfo({ station: z.station }, z.x));
     }
     const k = b.dataset.info, eintrag = k.startsWith("lage-") ? INFO.lage(k.slice(5)) : INFO[k];
     if (eintrag) infoZeigen(...eintrag);

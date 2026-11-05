@@ -13,6 +13,7 @@ Das Hochladen läuft in einem eigenen Thread und bremst die Abfragen nie.
 from __future__ import annotations
 
 import base64
+import gzip
 import json
 import os
 import threading
@@ -114,9 +115,17 @@ class LiveStand:
         return {"mittel_min": round(sum(v) / len(v) / 60, 1), "n": len(v)}
 
     def abfahrten(self, ansicht: dict, jetzt_utc: datetime) -> list[dict]:
-        st, g, filt = ansicht["station"], ansicht["richtung"], ansicht.get("ziel_enthaelt")
-        lage_jetzt = self.lage(lg.zulauf(st, g), jetzt_utc)["mittel_min"]
-        bis = jetzt_utc + timedelta(minutes=self.cfg.get("vorschau_min", 45))
+        return self.liste(ansicht["station"], ansicht["richtung"], jetzt_utc, self.cfg.get("vorschau_min", 45),
+                          self.cfg.get("max_abfahrten", 6), ansicht.get("ziel_enthaelt"))
+
+    def liste(self, st: str, g: str, jetzt_utc: datetime, vorschau_min: float, max_n: int,
+              filt: str | None = None, lage_cache: dict | None = None) -> list[dict]:
+        zg = lg.zulauf(st, g)
+        if lage_cache is not None and zg in lage_cache:
+            lage_jetzt = lage_cache[zg]
+        else:
+            lage_jetzt = self.lage(zg, jetzt_utc)["mittel_min"]
+        bis = jetzt_utc + timedelta(minutes=vorschau_min)
         liste = []
         for (s_st, soll, gg), d in sorted(self.werte.items(), key=lambda kv: kv[0][1]):
             if s_st != st or gg != g or soll > bis:
@@ -139,9 +148,22 @@ class LiveStand:
                 "anteil_ab5": None if not z else z["anteil_ab5"], "faelle": None if not z else z["n"],
                 "zelle": None if not z else z["zelle"], "vorlauf_min": round(max(vorlauf, 0)), "lage_min": lage_jetzt,
                 "ampel": ampel, "ausfall": d["ausfall"], "ziel": " | ".join(sorted(d["ziele"]))})
-            if len(liste) >= self.cfg.get("max_abfahrten", 6):
+            if len(liste) >= max_n:
                 break
         return liste
+
+    def alle_stationen(self, jetzt_utc: datetime) -> dict:
+        """Kompakt: alle Stationen und Richtungen (für die freie Wahl von Start und Ziel auf der Live-Seite)."""
+        lage_cache = {g: self.lage(g, jetzt_utc)["mittel_min"] for g in ("west", "ost")}
+        erg = {}
+        for st in self.idx:
+            for g in ("west", "ost"):
+                l = self.liste(st, g, jetzt_utc, self.cfg.get("vorschau_alle_min", 60), 14, lage_cache=lage_cache)
+                if l:
+                    erg.setdefault(st, {})[g] = [
+                        [x["soll_utc"][11:16], x["app_min"], x["erwartet_min"], x["von_min"], x["bis_min"],
+                         x["anteil_ab5"], x["faelle"], x["zelle"], int(x["ausfall"]), x["ziel"], x["soll_utc"]] for x in l]
+        return erg
 
     def schnappschuss(self, jetzt_utc: datetime) -> dict:
         lage = {}
@@ -157,6 +179,9 @@ class LiveStand:
                            "startbahnhof": a["station"] in lg.STARTBAHNHOEFE, "abfahrten": self.abfahrten(a, jetzt_utc)}
                           for a in self.cfg.get("ansichten", [])],
             "tabelle": {k: self.tabelle.get(k) for k in ("tage", "erster_tag", "letzter_tag", "abfahrten")},
+            # Felder je Abfahrt: Soll (UTC hh:mm), App, Erwartet, von, bis, Anteil ab 5 min, Fälle, Zelle, Ausfall, Ziele, Soll ISO
+            "stationen": self.alle_stationen(jetzt_utc),
+            "lage_min": {g: lage[g]["mittel_min"] for g in lage},
         }
 
 
@@ -201,8 +226,9 @@ class LiveVeroeffentlichung:
     def senden(self, schnappschuss: dict) -> bool:
         if self.faden and self.faden.is_alive():
             return False  # vorheriges Hochladen läuft noch: diesen Stand überspringen
-        klartext = json.dumps(schnappschuss, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        klartext = gzip.compress(json.dumps(schnappschuss, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
         paket, self.schluessel = verschluesseln(klartext, self.passwort, self.salz, self.schluessel)
+        paket["gzip"] = True
         self.faden = threading.Thread(target=self._hochladen, args=(json.dumps(paket),), daemon=True)
         self.faden.start()
         return True

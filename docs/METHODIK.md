@@ -150,6 +150,14 @@ Lage der Linie werden 27 % erkannt, davon 74 % zu Recht. Selbst bei Abfahrt zeig
 nennenswerte Verspätung. Ist die Linie gestört (Ø über 6 min), kamen als pünktlich angezeigte Züge im
 Mittel 5 Minuten zu spät. Das Signal reicht etwa 20–30 Minuten voraus, nach 45 Minuten ist es weg.
 
+**Freie Streckenwahl (ab 05.11.2026):** Der Live-Stand enthält die nächsten 60 Minuten für alle
+Stationen und beide Richtungen; die Seite filtert im Browser auf Züge, die vom gewählten Start bis zum
+Ziel fahren (Zuglauf aus dem Ziel des Zuges, Äste Poppenbüttel und Flughafen getrennt). Die Ankunft
+wird geschätzt: Planzeit aus den typischen Fahrzeiten des Soll-Fahrplans (`auswertung/fahrzeiten.py`,
+öffentlich) bzw. aus der Planzeit desselben Zuges am Ziel oder am Halt davor, wenn er in den Live-Daten
+steht; erwartete Ankunft = Plan + erwartete Verspätung dieses Zuges dort. Die Schnittstelle liefert
+keine Ankünfte, daher ±1 Minute Ungenauigkeit.
+
 **Vertraulichkeit:** Einzelne Züge mit Live-Verspätung sind Rohdaten der Schnittstelle. Der Live-Stand
 wird deshalb mit AES-256-GCM verschlüsselt (Schlüssel aus einem Passwort per PBKDF2-SHA256, 210.000
 Runden) und nur als einzelne Datei im Zweig `live` abgelegt. Ohne Passwort ist er nicht lesbar; das

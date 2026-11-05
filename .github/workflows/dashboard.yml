@@ -61,6 +61,7 @@ jobs:
           mkdir -p site
           python auswertung/aggregieren.py --endstand daten/endstand --ausgabe site/daten
           cp dashboard/index.html dashboard/live.html site/
+          python auswertung/fahrzeiten.py --ausgabe site/fahrzeiten.json
           echo "bereit=ja" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-pages-artifact@v3
