@@ -183,10 +183,13 @@ function zeigen(d) {
   letzterStand = d;
   $("lage").innerHTML = ["west", "ost"].map((g) => {
     const l = d.lage[g] || {}, m = l.mittel_min;
-    const tend = l.tendenz === "steigend" ? " ↑ steigend" : l.tendenz === "fallend" ? " ↓ fallend" : "";
+    const zahl = (x) => x.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const tend = l.tendenz === "steigend" ? "wird schlechter" : l.tendenz === "fallend" ? "bessert sich" : l.tendenz === "gleich" ? "unverändert" : "";
+    const vorher = l.vor_10_min != null && tend ? `<div class="leise" style="margin-top:4px">${tend} (vor 10&nbsp;Min.: ${zahl(l.vor_10_min)}&nbsp;min)</div>` : "";
     return `<div class="karte"><div class="leise">${LAGE_NAME[g]}<button class="i" data-info="lage-${g}" aria-label="Erklärung: Lage der Linie">i</button></div>
-      <div class="wert">${m == null ? "–" : "Ø " + minuten(m.toLocaleString("de-DE"))} min</div>
-      <span class="zustand z-${lageStufe(m)}">${lageText(m)}${tend}</span></div>`;
+      <div class="leise" style="margin-top:6px">Ø Verspätung, letzte 20&nbsp;Min.</div>
+      <div class="wert">${m == null ? "–" : zahl(m) + "&nbsp;min"}</div>
+      <span class="zustand z-${lageStufe(m)}">${lageText(m)}</span>${vorher}</div>`;
   }).join("");
   $("meldungen").innerHTML = (d.meldungen || []).map((t) => `<div class="meldung">⚠ ${t.replace(/[<>&]/g, "")}<button class="i" data-info="meldung" aria-label="Erklärung: Störungsmeldung">i</button></div>`).join("");
   $("wahl-karte").hidden = !(d.stationen && F);
@@ -338,7 +341,7 @@ const INFO = {
     <p>Grundlage sind die Abfragen, die der Sammler ohnehin macht: jede S1-Station einmal pro Minute bei der hvv-Schnittstelle (Geofox). Ist der Stand älter als 8 Minuten, erscheint eine Warnung.</p>`],
   lage: (g) => [LAGE_NAME[g], `<p><b>Ø</b> ist der Durchschnitt der Verspätungen aller S1-Abfahrten ${g === "west" ? "Richtung Innenstadt / Wedel" : "Richtung Poppenbüttel / Flughafen"} mit Planzeit in den letzten 20 Minuten, über alle Stationen. Gezählt wird der zuletzt gemeldete Wert jeder Abfahrt. Startbahnhöfe (Wedel, Poppenbüttel, Flughafen) zählen nicht, weil dort vor der Abfahrt fast immer „pünktlich“ steht. Nötig sind mindestens 3 Abfahrten mit Wert.</p>
     <ul><li>ruhig: unter 1 min</li><li>leicht verspätet: 1 bis unter 3 min</li><li>gestört: 3 bis unter 6 min</li><li>stark gestört: ab 6 min</li></ul>
-    <p><b>Tendenz</b>: Vergleich mit dem Wert von vor 10 Minuten; „steigend“ oder „fallend“ ab einer Minute Unterschied.</p>
+    <p><b>„wird schlechter“ / „bessert sich“</b>: Vergleich mit der durchschnittlichen Verspätung vor 10 Minuten (in Klammern). Ab einer Minute Unterschied, sonst „unverändert“.</p>
     <p>Warum das hilft: Verspätungen pflanzen sich fort. In unseren Daten kamen als pünktlich angezeigte Züge bei gestörter Linie im Mittel rund 5 Minuten zu spät. Das Signal trägt etwa 20–30 Minuten voraus.</p>`],
   meldung: ["Störungsmeldung", `<p>Aktuelle, ungeplante Meldung des hvv, die die S1 betrifft und gerade gültig ist. Abgerufen alle 5 Minuten über die hvv-Schnittstelle. Geplante Bauarbeiten werden hier nicht angezeigt.</p>`],
   plan: ["Ab (Plan)", `<p>Abfahrtszeit laut Fahrplan an deiner Startstation. Gezeigt werden die Abfahrten der nächsten 60 Minuten, die laut letzter Meldung noch nicht abgefahren sind, und nur Züge, die wirklich bis zu deinem Ziel fahren (z. B. nicht die Züge, die in Ohlsdorf zum Flughafen abbiegen, wenn du nach Poppenbüttel willst).</p>`],
