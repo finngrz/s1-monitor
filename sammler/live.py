@@ -137,6 +137,7 @@ class LiveStand:
                 "app_min": None if app_min is None else round(app_min), "erwartet_min": round(erwartet),
                 "von_min": None if not z else round(max(z["von"], 0)), "bis_min": None if not z else round(z["bis"]),
                 "anteil_ab5": None if not z else z["anteil_ab5"], "faelle": None if not z else z["n"],
+                "zelle": None if not z else z["zelle"], "vorlauf_min": round(max(vorlauf, 0)), "lage_min": lage_jetzt,
                 "ampel": ampel, "ausfall": d["ausfall"], "ziel": " | ".join(sorted(d["ziele"]))})
             if len(liste) >= self.cfg.get("max_abfahrten", 6):
                 break

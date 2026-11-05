@@ -40,7 +40,7 @@
   .z-grau { background: var(--rand); color: var(--leise); }
   .meldung { background: var(--gelb-bg); border: 1px solid var(--gelb); border-radius: 10px; padding: 8px 12px; margin: 10px 0; font-size: 14px; }
   table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-  th { text-align: left; font-size: 12px; font-weight: 500; color: var(--leise); padding: 2px 4px 4px; }
+  th { white-space: nowrap; text-align: left; font-size: 12px; font-weight: 500; color: var(--leise); padding: 2px 4px 4px; }
   td { padding: 7px 4px; border-top: 1px solid var(--rand); vertical-align: top; }
   td.zeit { font-weight: 650; width: 54px; }
   td.app { width: 64px; }
@@ -57,13 +57,30 @@
   footer p { margin: 6px 0; }
   a { color: var(--s1); }
   [hidden] { display: none !important; }
+  .i { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; padding: 0;
+       margin-left: 4px; border-radius: 50%; border: 1px solid var(--leise); background: transparent; color: var(--leise);
+       font: italic 600 12px/1 Georgia, serif; vertical-align: 1px; cursor: pointer; }
+  .i:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
+  th .i { width: 18px; height: 18px; font-size: 11px; }
+  dialog { border: 1px solid var(--rand); border-radius: 14px; background: var(--flaeche); color: var(--text);
+           max-width: 520px; width: calc(100% - 32px); padding: 16px 18px; }
+  dialog::backdrop { background: rgba(0, 0, 0, .45); }
+  dialog h3 { margin: 0 0 8px; font-size: 17px; }
+  dialog p { margin: 0 0 10px; font-size: 15px; }
+  dialog ul { margin: 0 0 10px; padding-left: 20px; font-size: 15px; }
+  dialog .zu { width: 100%; margin-top: 4px; }
 </style>
 </head>
 <body>
+<dialog id="info" aria-labelledby="info-titel">
+  <h3 id="info-titel"></h3>
+  <div id="info-text"></div>
+  <button class="zu" id="info-zu">Schließen</button>
+</dialog>
 <main>
   <header>
     <h1>S1 live</h1>
-    <span class="leise" id="stand"></span>
+    <span class="leise"><span id="stand"></span><button class="i" data-info="stand" aria-label="Erklärung: Stand">i</button></span>
   </header>
 
   <section class="karte" id="anmelden" hidden>
@@ -84,7 +101,7 @@
     <div id="ansichten"></div>
     <footer class="leise">
       <p><b>App</b>: was die hvv-Schnittstelle gerade anzeigt („–“: noch keine Echtzeitangabe). <b>Erwartet</b>: was in vergleichbaren Lagen tatsächlich
-        passiert ist (Mittelwert, darunter die Spanne, in die 6 von 10 Fällen fielen). Grundlage: <span id="basis"></span>.</p>
+        passiert ist (Mittelwert, darunter die Spanne, in die 6 von 10 Fällen fielen). Grundlage: <span id="basis"></span>.<button class="i" data-info="grundlage" aria-label="Erklärung: Grundlage">i</button></p>
       <p><b>Lage der Linie</b>: durchschnittliche Verspätung aller S1-Abfahrten der Richtung in den letzten 20 Minuten.
         Aussagekräftig für etwa die nächsten 20–30 Minuten.</p>
       <p>Ab Poppenbüttel zeigt die Schnittstelle vor der Abfahrt fast immer „pünktlich“. Dort zählt die Lage der
@@ -147,28 +164,91 @@ function zeigen(d) {
   $("lage").innerHTML = ["west", "ost"].map((g) => {
     const l = d.lage[g] || {}, m = l.mittel_min;
     const tend = l.tendenz === "steigend" ? " ↑ steigend" : l.tendenz === "fallend" ? " ↓ fallend" : "";
-    return `<div class="karte"><div class="leise">${LAGE_NAME[g]}</div>
+    return `<div class="karte"><div class="leise">${LAGE_NAME[g]}<button class="i" data-info="lage-${g}" aria-label="Erklärung: Lage der Linie">i</button></div>
       <div class="wert">${m == null ? "–" : "Ø " + minuten(m.toLocaleString("de-DE"))} min</div>
       <span class="zustand z-${lageStufe(m)}">${lageText(m)}${tend}</span></div>`;
   }).join("");
-  $("meldungen").innerHTML = (d.meldungen || []).map((t) => `<div class="meldung">⚠ ${t.replace(/[<>&]/g, "")}</div>`).join("");
-  $("ansichten").innerHTML = d.ansichten.map((a) => {
-    const zeilen = a.abfahrten.length ? a.abfahrten.map((x) => {
+  $("meldungen").innerHTML = (d.meldungen || []).map((t) => `<div class="meldung">⚠ ${t.replace(/[<>&]/g, "")}<button class="i" data-info="meldung" aria-label="Erklärung: Störungsmeldung">i</button></div>`).join("");
+  $("ansichten").innerHTML = d.ansichten.map((a, ai) => {
+    const zeilen = a.abfahrten.length ? a.abfahrten.map((x, xi) => {
       const app = x.ausfall ? "fällt aus" : x.app_min == null ? "–" : minuten(x.app_min);
-      const erw = x.ausfall ? "" : `<span class="erw">${minuten(x.erwartet_min)} min</span>`
+      const knopf = x.ausfall ? "" : `<button class="i" data-abf="${ai}-${xi}" aria-label="Grundlage dieser Erwartung">i</button>`;
+      const erw = x.ausfall ? "" : `<span class="erw">${minuten(x.erwartet_min)} min</span>${knopf}`
         + (x.von_min != null && x.bis_min > x.von_min ? `<div class="spanne">meist ${x.von_min}–${x.bis_min} min</div>` : "");
-      const tipp = x.ampel === "rot" ? `<div class="tipp">Alternative prüfen</div>` : "";
+      const tipp = x.ampel === "rot" ? `<div class="tipp">Alternative prüfen<button class="i" data-info="alternative" aria-label="Erklärung: Alternative prüfen">i</button></div>` : "";
       return `<tr><td class="zeit">${x.soll}</td><td class="app">${app}</td>
         <td><span class="punkt p-${x.ampel}" aria-hidden="true"></span>${erw}${tipp}</td></tr>`;
     }).join("") : `<tr><td colspan="3" class="leise">Keine Abfahrten in den nächsten 45 Minuten.</td></tr>`;
-    return `<section class="karte"><h2>${a.titel}</h2>
-      <table><thead><tr><th>Plan</th><th>App</th><th>Erwartet</th></tr></thead><tbody>${zeilen}</tbody></table></section>`;
+    const ib = (k, n) => `<button class="i" data-info="${k}" aria-label="Erklärung: ${n}">i</button>`;
+    return `<section class="karte"><h2>${a.titel}${a.startbahnhof ? ib("startbahnhof", "Startbahnhof") : ""}</h2>
+      <table><thead><tr><th>Plan${ib("plan", "Plan")}</th><th>App${ib("app", "App")}</th><th>Erwartet${ib("erwartet", "Erwartet")}</th></tr></thead><tbody>${zeilen}</tbody></table></section>`;
   }).join("");
   const t = d.tabelle || {};
-  $("basis").textContent = t.tage ? `${t.tage} Tage, ${Number(t.abfahrten).toLocaleString("de-DE")} Abfahrten (bis ${t.letzter_tag})` : "noch keine Prognose-Tabelle, nur App-Werte";
+  $("basis").textContent = t.tage ? `${t.tage} Tage, ${Number(t.abfahrten).toLocaleString("de-DE")} Abfahrten (bis ${datum(t.letzter_tag)})` : "noch keine Prognose-Tabelle, nur App-Werte";
   $("inhalt").hidden = false;
   alter();
 }
+
+const INFO = {
+  stand: ["Stand", `<p>Zeitpunkt, zu dem der Sammler diesen Live-Stand berechnet hat. Er erneuert ihn alle 2 Minuten, die Seite holt ihn alle 90 Sekunden und beim Zurückkehren in die App.</p>
+    <p>Grundlage sind die Abfragen, die der Sammler ohnehin macht: jede S1-Station einmal pro Minute bei der hvv-Schnittstelle (Geofox). Ist der Stand älter als 8 Minuten, erscheint eine Warnung.</p>`],
+  lage: (g) => [LAGE_NAME[g], `<p><b>Ø</b> ist der Durchschnitt der Verspätungen aller S1-Abfahrten ${g === "west" ? "Richtung Innenstadt / Wedel" : "Richtung Poppenbüttel / Flughafen"} mit Planzeit in den letzten 20 Minuten, über alle Stationen. Gezählt wird der zuletzt gemeldete Wert jeder Abfahrt. Startbahnhöfe (Wedel, Poppenbüttel, Flughafen) zählen nicht, weil dort vor der Abfahrt fast immer „pünktlich“ steht. Nötig sind mindestens 3 Abfahrten mit Wert.</p>
+    <ul><li>ruhig: unter 1 min</li><li>leicht verspätet: 1 bis unter 3 min</li><li>gestört: 3 bis unter 6 min</li><li>stark gestört: ab 6 min</li></ul>
+    <p><b>Tendenz</b>: Vergleich mit dem Wert von vor 10 Minuten; „steigend“ oder „fallend“ ab einer Minute Unterschied.</p>
+    <p>Warum das hilft: Verspätungen pflanzen sich fort. In unseren Daten kamen als pünktlich angezeigte Züge bei gestörter Linie im Mittel rund 5 Minuten zu spät. Das Signal trägt etwa 20–30 Minuten voraus.</p>`],
+  meldung: ["Störungsmeldung", `<p>Aktuelle, ungeplante Meldung des hvv, die die S1 betrifft und gerade gültig ist. Abgerufen alle 5 Minuten über die hvv-Schnittstelle. Geplante Bauarbeiten werden hier nicht angezeigt.</p>`],
+  plan: ["Plan", `<p>Abfahrtszeit laut Fahrplan an dieser Station. Gezeigt werden die Abfahrten der nächsten 45 Minuten, die laut letzter Meldung noch nicht abgefahren sind.</p>`],
+  app: ["App", `<p>Die Verspätung, die die hvv-Schnittstelle gerade für diesen Zug meldet, in Minuten. Das ist dieselbe Information wie in der hvv-App.</p>
+    <p>„–“ heißt: noch keine Echtzeitangabe. Die App zeigt dann die Planzeit, also „pünktlich“. Die Schnittstelle meldet nur ganze Minuten und nie Frühabfahrten.</p>`],
+  erwartet: ["Erwartet", `<p>Was in vergleichbaren Situationen tatsächlich passiert ist. Vergleichbar heißt gleich in vier Merkmalen:</p>
+    <ul><li>Zeit bis zur Abfahrt (0, 5, 10, 15, 20 oder 30 min)</li><li>was die App zeigte (0, 1–2, 3–4, 5–7, über 7 min)</li>
+    <li>Lage der Linie (unter 1, 1–3, 3–6, über 6 min)</li><li>Halt unterwegs oder Startbahnhof</li></ul>
+    <p>Die große Zahl ist der Mittelwert der tatsächlichen Verspätung dieser Fälle, „meist X–Y“ die Spanne, in die 6 von 10 Fällen fielen (20- bis 80-%-Quantil). Gibt es weniger als 30 Fälle, wird eine gröbere Gruppe genommen. Die Erwartung ist nie kleiner als die App-Anzeige.</p>
+    <p><b>Farben:</b> grün unter 3 min, gelb 3–5 min, rot ab 6 min oder Ausfall.</p>
+    <p>Tippe auf das i neben einer Erwartung, um die Grundlage genau dieses Zuges zu sehen.</p>`],
+  alternative: ["Alternative prüfen", `<p>Erscheint, wenn wir 6 Minuten oder mehr erwarten. Das ist die Schwelle, ab der die S-Bahn selbst einen Zug als unpünktlich zählt.</p>
+    <p>Zur Treffsicherheit (geprüft an Tagen, die beim Berechnen nicht verwendet wurden): 10 Minuten vorher erkennt die Seite etwa 4 von 10 stark verspäteten Zügen, die App etwa 2 von 10. Etwa jede vierte Warnung der Seite ist ein Fehlalarm.</p>`],
+  startbahnhof: ["Startbahnhof", `<p>Hier beginnen die Züge. Die Schnittstelle meldet für sie vor der Abfahrt praktisch nie eine Verspätung, die Spalte „App“ zeigt deshalb meist „–“.</p>
+    <p>Die Erwartung stützt sich hier auf die Lage der <b>Gegenrichtung</b>, denn der ankommende Zug fährt zurück. Als tatsächliche Verspätung gilt die am nächsten Halt (Wellingsbüttel), weil die Abfahrt in Poppenbüttel selbst meist nicht korrigiert wird. Diese Prognose ist die unsicherste der drei Listen.</p>`],
+  grundlage: ["Grundlage", `<p>Die Vergleichstabelle wird jeden Morgen aus allen bisher gesammelten Tagen neu berechnet und wird dadurch mit jedem Tag genauer. Veröffentlicht werden nur Zählungen, keine einzelnen Fahrten.</p>
+    <p>Die Live-Daten selbst sind verschlüsselt und nur mit dem Passwort lesbar. Für die Live-Seite entsteht keine zusätzliche Abfrage bei der hvv-Schnittstelle. Es läuft keine KI, nur feste Regeln. Die Methodik steht im Projekt unter docs/METHODIK.md.</p>`],
+};
+const ANZEIGE_TEXT = { "0": "pünktlich bzw. keine Angabe", "1-2": "+1 bis +2 min", "3-4": "+3 bis +4 min", "5-7": "+5 bis +7 min", ">7": "über +7 min" };
+const LAGE_TEXT = { "<1": "ruhig (Ø unter 1 min)", "1-3": "leicht verspätet (Ø 1–3 min)", "3-6": "gestört (Ø 3–6 min)", ">6": "stark gestört (Ø über 6 min)" };
+
+const datum = (d) => d ? d.slice(8, 10) + "." + d.slice(5, 7) + "." : "";
+function abfahrtInfo(a, x) {
+  if (x.zelle === undefined && x.faelle) return [`${x.soll} ab ${a.station}`, `<p>Grundlage: ${Number(x.faelle).toLocaleString("de-DE")} vergleichbare Fälle. Sie waren im Mittel ${minuten(x.erwartet_min)} min zu spät, 6 von 10 lagen zwischen ${x.von_min} und ${x.bis_min} min. Die genauen Merkmale erscheinen ab dem nächsten Sammel-Lauf.</p>`];
+  if (!x.zelle) return [`${x.soll} ab ${a.station}`, `<p>Für diese Situation gibt es noch keine Vergleichsfälle. Angezeigt wird deshalb nur der App-Wert.</p>`];
+  const [art, vorlauf, anz, lage] = x.zelle.split("|"), t = letzterStand.tabelle || {};
+  const merkmale = [`<li>${art === "start" ? "Startbahnhof" : "Halt unterwegs"}</li>`, vorlauf === "0" ? "<li>kurz vor oder bei Abfahrt</li>" : `<li>etwa ${vorlauf} min vor Abfahrt</li>`,
+    anz === "*" ? "<li>App-Anzeige nicht berücksichtigt (zu wenige Fälle)</li>" : `<li>App zeigte ${ANZEIGE_TEXT[anz]}</li>`,
+    lage === "*" ? "<li>Lage der Linie nicht berücksichtigt (zu wenige Fälle oder Daten)</li>"
+      : `<li>Linie ${art === "start" ? "in Gegenrichtung " : ""}${LAGE_TEXT[lage]}${x.lage_min != null ? `, gerade Ø ${x.lage_min.toLocaleString("de-DE")} min` : ""}</li>`];
+  return [`${x.soll} ab ${a.station}`, `<p>Verglichen mit früheren Zügen in derselben Situation:</p><ul>${merkmale.join("")}</ul>
+    <p>Davon gab es <b>${Number(x.faelle).toLocaleString("de-DE")} Fälle</b>${t.tage ? ` an ${t.tage} Tagen (${datum(t.erster_tag)} bis ${datum(t.letzter_tag)})` : ""}. Sie waren im Mittel <b>${minuten(x.erwartet_min)} min</b> zu spät, 6 von 10 lagen zwischen ${x.von_min} und ${x.bis_min} min, ${Math.round(x.anteil_ab5 * 100)} % kamen 5 Minuten oder später.</p>
+    ${x.app_min != null && x.app_min >= x.erwartet_min ? "<p>Die Erwartung entspricht hier der App-Anzeige, weil sie nie darunter liegen soll.</p>" : ""}`];
+}
+
+function infoZeigen(titel, html) {
+  $("info-titel").textContent = titel; $("info-text").innerHTML = html;
+  if ($("info").showModal) $("info").showModal(); else $("info").setAttribute("open", "");
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest(".i");
+  if (b) {
+    e.preventDefault();
+    if (b.dataset.abf) {
+      const [ai, xi] = b.dataset.abf.split("-").map(Number), a = letzterStand.ansichten[ai];
+      return infoZeigen(...abfahrtInfo(a, a.abfahrten[xi]));
+    }
+    const k = b.dataset.info, eintrag = k.startsWith("lage-") ? INFO.lage(k.slice(5)) : INFO[k];
+    if (eintrag) infoZeigen(...eintrag);
+    return;
+  }
+  if (e.target === $("info")) $("info").close();
+});
+$("info-zu").addEventListener("click", () => $("info").close());
 
 function alter() {
   if (!letzterStand) return;
