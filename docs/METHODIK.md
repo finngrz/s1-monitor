@@ -115,6 +115,13 @@ pausiert: Auch in schwachen Stunden liefert sie die vorhandenen Werte und belegt
 Der Gesundheits-Check schlägt Alarm (E-Mail), wenn an einem Tag mehr als 15 % ohne Wert sind oder
 mindestens 3 Stunden ausgeschlossen werden.
 
+**Offener Punkt (05.11.2026):** Datenlücken können mit Störungen zusammenfallen (04.11., 7 Uhr: 22 % ohne
+Wert bei Ø 5,4 min Verspätung und 15 Ausfällen). Läge eine solche Stunde über 25 %, würde die
+Ausschlussregel ausgerechnet eine gestörte Stunde herausnehmen. Seit 03.11. ist keine Stunde betroffen.
+Entscheidung: vorerst beobachten (Spalte `stunden_ausgeschlossen` in `ergebnisse/datenqualitaet.csv`);
+falls es wieder auftritt, für lückenhafte Stunden eine Spanne ausweisen (fehlende Werte als pünktlich
+bzw. als verspätet gerechnet) statt sie auszuschließen.
+
 **Offener Punkt:** Rund 13 % der S1-Soll-Zeiten aus der Schnittstelle finden sich nicht im
 Open-Data-Fahrplan (z. B. zusätzliche Abfahrten Richtung Wedel um :05/:15). Das bestand schon vor dem
 Rückblick und wird in Stufe 3 geklärt (abweichende Fahrplanversion, Zusatzfahrten oder Baufahrplan).
