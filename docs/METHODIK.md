@@ -158,6 +158,18 @@ wird geschätzt: Planzeit aus den typischen Fahrzeiten des Soll-Fahrplans (`ausw
 steht; erwartete Ankunft = Plan + erwartete Verspätung dieses Zuges dort. Die Schnittstelle liefert
 keine Ankünfte, daher ±1 Minute Ungenauigkeit.
 
+**Poppenbüttel-Teil (Befund 05.11.2026):** Für Züge, die in der Innenstadt mit Ziel Poppenbüttel
+angezeigt werden, wurde geprüft, ob in Ohlsdorf zur passenden Zeit (Fahrzeit laut Soll-Fahrplan, ±2,5 min)
+eine Abfahrt nach Poppenbüttel angekündigt war. Ab 02.11., 16 Uhr (vollständige Daten): von 444 Zügen ab
+Stadthausbrücke fuhren 417 nachweislich weiter nach Poppenbüttel, 13 ohne Echtzeitangabe in Ohlsdorf,
+2 mit als Ausfall gemeldetem Poppenbüttel-Teil (04.11., 18:35 und 18:55, Störung zwischen Barmbek und
+Ohlsdorf; Status wechselte zwischen Ausfall und +35 min), 6 nur mit Flughafen-Teil. Letztere betreffen
+werktags die ersten Züge gegen 4 Uhr: Laut Soll-Fahrplan fährt der ganze Zug zum Flughafen (der
+Poppenbüttel-Teil verkehrt nur am Wochenende), die Schnittstelle zeigt in der Innenstadt trotzdem
+„Poppenbüttel / Hamburg Airport“. Ansagen im Zug sind in den Daten nicht enthalten. Die Live-Seite
+warnt bei Fahrten auf den Poppenbüttel-Ast, wenn in Ohlsdorf kein oder ein ausgefallener
+Poppenbüttel-Teil angekündigt ist.
+
 **Vertraulichkeit:** Einzelne Züge mit Live-Verspätung sind Rohdaten der Schnittstelle. Der Live-Stand
 wird deshalb mit AES-256-GCM verschlüsselt (Schlüssel aus einem Passwort per PBKDF2-SHA256, 210.000
 Runden) und nur als einzelne Datei im Zweig `live` abgelegt. Ohne Passwort ist er nicht lesbar; das

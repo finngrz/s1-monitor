@@ -266,6 +266,18 @@ function ankunft(d, p, eintrag) {
   return { plan: new Date(ab.getTime() + anSekunden(p.halte) * 1000), erw: eintrag[2], quelle: null };
 }
 
+// Prüft für Fahrten auf den Poppenbüttel-Ast, ob in Ohlsdorf wirklich ein Poppenbüttel-Teil angekündigt ist
+function astPruefung(d, p, eintrag) {
+  const ziel = p.halte[p.halte.length - 1], k = p.halte.indexOf("Ohlsdorf");
+  if (p.g !== "ost" || k < 1 || k === p.halte.length - 1 || !F.ast_poppenbuettel.includes(ziel)) return null;
+  const geplant = new Date(eintrag[10]).getTime() + sekunden(p.halte.slice(0, k + 1)) * 1000;
+  const nah = (((d.stationen.Ohlsdorf || {}).ost) || []).filter((x) => Math.abs(new Date(x[10]) - geplant) <= 150000);
+  const popp = nah.filter((x) => x[9].includes("Poppenbüttel")), flug = nah.filter((x) => x[9].includes("Airport"));
+  if (popp.some((x) => x[8])) return "Poppenbüttel-Teil fällt laut hvv aus";
+  if (!popp.length && flug.length) return "In Ohlsdorf ist nur der Flughafen-Teil angekündigt";
+  return null;
+}
+
 function wahlSetzen(von, nach) {
   wahl = [von, nach]; schreiben(WAHL_SPEICHER, wahl);
   if (letzterStand) zeigen(letzterStand);
@@ -292,7 +304,9 @@ function strecke(d) {
       + (o.von_min != null && o.bis_min > o.von_min ? `<div class="spanne">meist ${o.von_min}–${o.bis_min}</div>` : "");
     const an = ankunft(d, p, x), ist = new Date(an.plan.getTime() + Math.max(an.erw || 0, 0) * 60000);
     const anText = o.ausfall ? "" : an.erw > 0 ? `<b>≈ ${hhmm(ist)}</b><div class="spanne">Plan ${hhmm(an.plan)}</div>` : `<b>${hhmm(an.plan)}</b>`;
-    const tipp = ampel === "rot" ? `<div class="tipp">Alternative prüfen<button class="i" data-info="alternative" aria-label="Erklärung: Alternative prüfen">i</button></div>` : "";
+    const ast = o.ausfall ? null : astPruefung(d, p, x);
+    const tipp = (ast ? `<div class="tipp">⚠ ${ast}<button class="i" data-info="ast" aria-label="Erklärung: Poppenbüttel-Teil">i</button></div>` : "")
+      + (ampel === "rot" ? `<div class="tipp">Alternative prüfen<button class="i" data-info="alternative" aria-label="Erklärung: Alternative prüfen">i</button></div>` : "");
     return `<tr><td class="zeit">${o.soll}</td><td class="app">${app}</td>
       <td><span class="punkt p-${ampel}" aria-hidden="true"></span>${erw}${tipp}</td><td class="an">${anText}</td></tr>`;
   }).join("") : `<tr><td colspan="4" class="leise">Keine passenden Abfahrten in den nächsten 60 Minuten.</td></tr>`;
@@ -324,6 +338,10 @@ const INFO = {
     <p>Warum das hilft: Verspätungen pflanzen sich fort. In unseren Daten kamen als pünktlich angezeigte Züge bei gestörter Linie im Mittel rund 5 Minuten zu spät. Das Signal trägt etwa 20–30 Minuten voraus.</p>`],
   meldung: ["Störungsmeldung", `<p>Aktuelle, ungeplante Meldung des hvv, die die S1 betrifft und gerade gültig ist. Abgerufen alle 5 Minuten über die hvv-Schnittstelle. Geplante Bauarbeiten werden hier nicht angezeigt.</p>`],
   plan: ["Ab (Plan)", `<p>Abfahrtszeit laut Fahrplan an deiner Startstation. Gezeigt werden die Abfahrten der nächsten 60 Minuten, die laut letzter Meldung noch nicht abgefahren sind, und nur Züge, die wirklich bis zu deinem Ziel fahren (z. B. nicht die Züge, die in Ohlsdorf zum Flughafen abbiegen, wenn du nach Poppenbüttel willst).</p>`],
+  ast: ["Poppenbüttel-Teil", `<p>Die Züge Richtung Poppenbüttel und Flughafen fahren in der Innenstadt oft gekoppelt („Poppenbüttel / Flughafen“) und werden in Ohlsdorf getrennt. Die Seite prüft, ob in Ohlsdorf zur passenden Zeit wirklich ein Teil nach Poppenbüttel angekündigt ist.</p>
+    <ul><li><b>fällt laut hvv aus</b>: Der Poppenbüttel-Teil ist in Ohlsdorf als Ausfall gemeldet.</li>
+    <li><b>nur der Flughafen-Teil angekündigt</b>: In Ohlsdorf steht zu dieser Zeit nur eine Abfahrt zum Flughafen. Das kommt z. B. werktags frühmorgens vor: In der Innenstadt steht „Poppenbüttel / Flughafen“, laut Fahrplan fährt der ganze Zug aber zum Flughafen.</li></ul>
+    <p>Geprüft werden kann nur, was in den Live-Daten schon steht (etwa 60 Minuten voraus). Durchsagen im Zug, die nicht in den Daten landen, kann die Seite nicht sehen.</p>`],
   ankunft: ["Ankunft", `<p><b>Plan</b>: Ankunftszeit laut Fahrplan. Berechnet aus den typischen Fahrzeiten zwischen den Stationen im offiziellen Fahrplan (hvv Open Data) und, wo möglich, aus der Planzeit desselben Zuges an deinem Ziel.</p>
     <p><b>≈</b>: erwartete Ankunft = Plan + erwartete Verspätung. Wenn derselbe Zug am Ziel (bzw. am letzten Halt davor) schon in den Live-Daten steht, gilt dessen Erwartung, sonst die an deiner Startstation. Aufholen oder weiteres Verspäten unterwegs ist darin nur enthalten, soweit es sich in den Live-Daten schon zeigt.</p>
     <p>Die Schnittstelle liefert keine Ankunftszeiten, nur Abfahrten. Die Ankunft ist deshalb immer eine Schätzung, meist auf ±1 Minute genau.</p>`],
