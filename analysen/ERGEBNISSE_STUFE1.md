@@ -1,12 +1,12 @@
 # Ergebnisse Stufe 1: Fahrplan-Analysen
 
-Automatisch erzeugt am 03.11.2026 aus dem hvv-Soll-Fahrplan (gültig 20261002–20261212, Prüfsumme 2618dc1589da). **Alle Zahlen sind Plan-Werte ohne Verspätungen.** Was davon in der Realität ankommt, zeigt erst die Echtzeit-Erhebung ab Stufe 2.
+Automatisch erzeugt am 05.11.2026 aus dem hvv-Soll-Fahrplan (gültig 20261002–20261212, Prüfsumme 2618dc1589da). **Alle Zahlen sind Plan-Werte ohne Verspätungen.** Was davon in der Realität ankommt, zeigt erst die Echtzeit-Erhebung ab Stufe 2.
 
-Untersuchte Stichtage (typischer Fahrplan, kein Feiertag oder Sonderfahrplan): Werktag = Dienstag, 03.11.2026, Samstag = Samstag, 07.11.2026, Sonntag = Sonntag, 08.11.2026.
+Untersuchte Stichtage (typischer Fahrplan, kein Feiertag oder Sonderfahrplan): Werktag = Dienstag, 10.11.2026, Samstag = Samstag, 07.11.2026, Sonntag = Sonntag, 08.11.2026.
 
 ## F1: Warum dauert Stadthausbrücke → Poppenbüttel mal länger, mal kürzer?
 
-**Kurz:** Laut Plan dauert die direkte Fahrt am Dienstag, 03.11.2026 entweder **34 oder 36 Minuten**. Der Unterschied entsteht fast vollständig beim **Halt in Ohlsdorf**: Die längeren Fahrten stehen dort im Schnitt 2,9 Minuten, die kürzeren nur 1,0 Minuten.
+**Kurz:** Laut Plan dauert die direkte Fahrt am Dienstag, 10.11.2026 entweder **34 oder 36 Minuten**. Der Unterschied entsteht fast vollständig beim **Halt in Ohlsdorf**: Die längeren Fahrten stehen dort im Schnitt 2,9 Minuten, die kürzeren nur 1,0 Minuten.
 
 - 116 Fahrten brauchen 36 Minuten, 30 Fahrten (21 %) brauchen 34 Minuten.
 - Die 34-Minuten-Fahrten starten nur in diesen Zeitfenstern: 07:25–08:55, 15:15–18:25.
@@ -61,7 +61,7 @@ Für jede S1-Ankunft aus der Innenstadt in Ohlsdorf zwischen 06 und 20 Uhr: Wie 
 
 Buslinien an Ohlsdorf, Barmbek und Berliner Tor, die mindestens alle 20 Minuten fahren, im Tagesverkehr 06–20 Uhr. Sortiert nach der möglichen Ersparnis: Wie viel kürzer wäre die mittlere Umsteigezeit, wenn der Bus um bis zu ±10 Minuten anders läge? „Zufällige Lage“ ist der Durchschnitt über alle Verschiebungen, also der Wert ohne jede Abstimmung. Unberücksichtigt bleibt, dass ein Bus auch andere Anschlüsse bedient. Das ist eine Vorschau auf F8, keine fertige Empfehlung.
 
-Insgesamt liegen 48 % dieser Verbindungen besser als bei zufälliger Lage.
+Insgesamt liegen 47 % dieser Verbindungen besser als bei zufälliger Lage.
 
 | Knoten | Bus | Bus Richtung | S1 kommend | Bus-Takt | Ø heute | Ø bei zufälliger Lage | Ø bei bester Lage | Mögliche Ersparnis |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
