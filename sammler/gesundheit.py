@@ -103,6 +103,8 @@ def datenlage_pruefen(endstand: pd.DataFrame, probleme: list[str]) -> dict:
 
 
 LIVE_MAX_ALTER_MIN = 15
+FLATTERN_TAGE = 7
+FLATTERN_GRENZE = 0.10
 
 
 def live_pruefen(probleme: list[str]) -> float | None:
@@ -163,6 +165,14 @@ def main() -> int:
     ausgabe = Path(args.ausgabe)
     ausgabe.parent.mkdir(parents=True, exist_ok=True)
     alt = pd.read_csv(ausgabe) if ausgabe.exists() else pd.DataFrame()
+    # Dauerhaftes Flattern der Schnittstelle (Meldung an die Hochbahn erst, wenn es länger anhält)
+    verlauf = pd.concat([alt, pd.DataFrame([kennzahlen])], ignore_index=True).drop_duplicates("datum", keep="last")
+    if "anteil_flattern" in verlauf:
+        letzte = pd.to_numeric(verlauf.sort_values("datum")["anteil_flattern"], errors="coerce").tail(FLATTERN_TAGE)
+        if len(letzte) == FLATTERN_TAGE and (letzte > FLATTERN_GRENZE).all():
+            probleme.append(f"Schnittstelle flattert seit {FLATTERN_TAGE} Tagen (täglich über {FLATTERN_GRENZE:.0%} der "
+                            "S1-Abfahrten): Zeitpunkt für eine Meldung an die Hochbahn")
+            kennzahlen["probleme"] = " | ".join(probleme)
     if not args.test_fehler:
         neu = pd.concat([alt[alt.get("datum", pd.Series(dtype=str)) != kennzahlen["datum"]] if len(alt) else alt,
                          pd.DataFrame([kennzahlen])], ignore_index=True)

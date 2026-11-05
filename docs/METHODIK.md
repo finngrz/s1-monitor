@@ -124,7 +124,8 @@ Betroffen waren am 05.11. 42 % der S1-Abfahrten (vorher 1–5 % je Tag). Regel: 
 werden je Abfahrt gezählt (Spalte `verworfen`). Wirkung auf die Tagesstatistik gering (04.11.:
 Pünktlichkeit < 3 min 52,6 % ohne bzw. 51,9 % mit Regel), weil die Endstände meist aus Antworten nach
 der Abfahrt stammen; für die Live-Anzeige ist die Regel wesentlich. Anteil je Tag im Gesundheits-Check
-(`anteil_flattern`). Nach den Nutzungsbedingungen an die Hochbahn zu melden.
+(`anteil_flattern`). Entscheidung: vorerst beobachten; der Gesundheits-Check meldet sich, wenn an 7 Tagen
+in Folge mehr als 10 % der S1-Abfahrten flattern. Dann Meldung an die Hochbahn (Nutzungsbedingungen).
 
 **Offener Punkt (05.11.2026):** Datenlücken können mit Störungen zusammenfallen (04.11., 7 Uhr: 22 % ohne
 Wert bei Ø 5,4 min Verspätung und 15 Ausfällen). Läge eine solche Stunde über 25 %, würde die
