@@ -162,6 +162,18 @@ Lage der Linie werden 27 % erkannt, davon 74 % zu Recht. Selbst bei Abfahrt zeig
 nennenswerte Verspätung. Ist die Linie gestört (Ø über 6 min), kamen als pünktlich angezeigte Züge im
 Mittel 5 Minuten zu spät. Das Signal reicht etwa 20–30 Minuten voraus, nach 45 Minuten ist es weg.
 
+**Bewertung der Live-Prognose (ab 06.11.2026):** Jede Nacht rechnet `auswertung/prognose_bewertung.py`
+für die Vortage nach, was die Live-Seite zu jedem Vorlauf erwartet hätte, mit der an diesem Tag gültigen
+Tabelle aus dem Git-Verlauf (die den Tag selbst noch nicht kannte), und vergleicht mit dem Endstand.
+Kennzahlen je Tag, Art des Halts und Vorlauf für App-Anzeige und Prognose: mittlere absolute Abweichung,
+Bias, Anteil auf 2 Minuten genau, Anteil in der angezeigten Spanne, Warnungen (ab 6 min) erkannt und
+berechtigt. Ergebnis `ergebnisse/prognose_bewertung.csv`; die Live-Seite zeigt die letzten 7 Tage.
+Erste Werte (03.–05.11., 10 min Vorlauf, Halte unterwegs): Abweichung 2,6 min (App 3,2), Bias +0,8 min
+(App +3,2), stark verspätete Züge erkannt 31 % (App 15 %), Warnungen zu 83 % berechtigt, 75 % in der
+Spanne. Schwächen: an stark gestörten Tagen bleibt die Prognose zu optimistisch (04.11.: Bias +1,8 min);
+ab Startbahnhof (Poppenbüttel) kein Vorteil gegenüber der App. Änderungen an der Berechnung werden nur
+übernommen, wenn sie in dieser Bewertung über mehrere Wochen besser abschneiden.
+
 **Freie Streckenwahl (ab 05.11.2026):** Der Live-Stand enthält die nächsten 60 Minuten für alle
 Stationen und beide Richtungen; die Seite filtert im Browser auf Züge, die vom gewählten Start bis zum
 Ziel fahren (Zuglauf aus dem Ziel des Zuges, Äste Poppenbüttel und Flughafen getrennt). Die Ankunft

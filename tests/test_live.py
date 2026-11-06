@@ -81,3 +81,12 @@ def test_flattern_wird_verworfen():
     for v in (5, 0, 6, 0):
         L.aufnehmen(zeile("Barmbek", 3, v))
     assert next(iter(L.werte.values()))["v"] == 360
+
+
+def test_bewertung_kennzahlen():
+    import prognose_bewertung as pb
+    g = pd.DataFrame({"y": [0, 8, 10, 1], "anzeige_min": [0, 2, 9, 0], "erwartet": [1, 7, 10, 6],
+                      "von": [0, 5, 8, 0], "bis": [2, 9, 12, 3]})
+    k = pb.kennzahlen(g)
+    assert k["n"] == 4 and k["warn_app_erkannt"] == 0.5 and k["warn_prognose_erkannt"] == 1.0
+    assert k["warn_prognose_berechtigt"] == round(2 / 3, 3) and k["in_spanne"] == 1.0

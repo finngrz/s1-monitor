@@ -1,5 +1,5 @@
 {
- "erzeugt_utc": "2026-11-06T04:29:04+00:00",
+ "erzeugt_utc": "2026-11-06T09:09:17+00:00",
  "tage": 5,
  "erster_tag": "2026-11-01",
  "letzter_tag": "2026-11-05",
@@ -118,6 +118,22 @@
     }
    }
   ]
+ },
+ "bewertung": {
+  "tage": 3,
+  "von": "2026-11-03",
+  "bis": "2026-11-05",
+  "abfahrten": 23521,
+  "abw_app": 3.237,
+  "abw_prognose": 2.584,
+  "bias_app": 3.233,
+  "bias_prognose": 0.779,
+  "treffer2_app": 0.563,
+  "treffer2_prognose": 0.593,
+  "in_spanne": 0.748,
+  "warn_app_erkannt": 0.152,
+  "warn_prognose_erkannt": 0.311,
+  "warn_prognose_berechtigt": 0.828
  },
  "zellen": {
   "start|0|0|*": {

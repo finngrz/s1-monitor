@@ -180,7 +180,7 @@ class LiveStand:
             "ansichten": [{"id": a["id"], "titel": a["titel"], "station": a["station"],
                            "startbahnhof": a["station"] in lg.STARTBAHNHOEFE, "abfahrten": self.abfahrten(a, jetzt_utc)}
                           for a in self.cfg.get("ansichten", [])],
-            "tabelle": {k: self.tabelle.get(k) for k in ("tage", "erster_tag", "letzter_tag", "abfahrten")},
+            "tabelle": {k: self.tabelle.get(k) for k in ("tage", "erster_tag", "letzter_tag", "abfahrten", "bewertung")},
             # Felder je Abfahrt: Soll (UTC hh:mm), App, Erwartet, von, bis, Anteil ab 5 min, Fälle, Zelle, Ausfall, Ziele, Soll ISO
             "stationen": self.alle_stationen(jetzt_utc),
             "lage_min": {g: lage[g]["mittel_min"] for g in lage},

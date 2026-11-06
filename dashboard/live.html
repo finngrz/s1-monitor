@@ -120,7 +120,8 @@
     <div id="ansichten"></div>
     <footer class="leise">
       <p><b>App</b>: was die hvv-Schnittstelle gerade anzeigt („–“: noch keine Echtzeitangabe). <b>Erwartet</b>: was in vergleichbaren Lagen tatsächlich
-        passiert ist (Mittelwert, darunter die Spanne, in die 6 von 10 Fällen fielen). Grundlage: <span id="basis"></span>.<button class="i" data-info="grundlage" aria-label="Erklärung: Grundlage">i</button></p>
+        passiert ist (Mittelwert, darunter die übliche Spanne). Grundlage: <span id="basis"></span>.<button class="i" data-info="grundlage" aria-label="Erklärung: Grundlage">i</button></p>
+      <p id="treffsicherheit" hidden></p>
       <p><b>Lage der Linie</b>: durchschnittliche Verspätung aller S1-Abfahrten der Richtung in den letzten 20 Minuten.
         Aussagekräftig für etwa die nächsten 20–30 Minuten.</p>
       <p>Ab Poppenbüttel zeigt die Schnittstelle vor der Abfahrt fast immer „pünktlich“. Dort zählt die Lage der
@@ -212,6 +213,9 @@ function zeigen(d) {
   }).join("");
   const t = d.tabelle || {};
   $("basis").textContent = t.tage ? `${t.tage} Tage, ${Number(t.abfahrten).toLocaleString("de-DE")} Abfahrten (bis ${datum(t.letzter_tag)})` : "noch keine Prognose-Tabelle, nur App-Werte";
+  const bw = t.bewertung, pz = (x) => Math.round(x * 100) + " %", mn = (x) => x.toLocaleString("de-DE", { maximumFractionDigits: 1 });
+  $("treffsicherheit").hidden = !bw;
+  if (bw) $("treffsicherheit").innerHTML = `<b>Treffsicherheit</b> (${bw.tage} Tage, 10 Min. vor Abfahrt): im Schnitt ${mn(bw.abw_prognose)} min daneben (App ${mn(bw.abw_app)} min). Stark verspätete Züge erkannt: ${pz(bw.warn_prognose_erkannt)} (App ${pz(bw.warn_app_erkannt)}), Warnungen berechtigt: ${pz(bw.warn_prognose_berechtigt)}.<button class="i" data-info="treffer" aria-label="Erklärung: Treffsicherheit">i</button>`;
   $("inhalt").hidden = false;
   alter();
 }
@@ -349,6 +353,18 @@ const INFO = {
     <ul><li><b>fällt laut hvv aus</b>: Der Poppenbüttel-Teil ist in Ohlsdorf als Ausfall gemeldet.</li>
     <li><b>nur der Flughafen-Teil angekündigt</b>: In Ohlsdorf steht zu dieser Zeit nur eine Abfahrt zum Flughafen. Das kommt z. B. werktags frühmorgens vor: In der Innenstadt steht „Poppenbüttel / Flughafen“, laut Fahrplan fährt der ganze Zug aber zum Flughafen.</li></ul>
     <p>Geprüft werden kann nur, was in den Live-Daten schon steht (etwa 60 Minuten voraus). Durchsagen im Zug, die nicht in den Daten landen, kann die Seite nicht sehen.</p>`],
+  treffer: () => {
+    const bw = (letzterStand.tabelle || {}).bewertung; if (!bw) return ["Treffsicherheit", "<p>Noch keine Bewertung vorhanden.</p>"];
+    const pz = (x) => Math.round(x * 100) + " %", mn = (x) => x.toLocaleString("de-DE", { maximumFractionDigits: 1 });
+    return ["Treffsicherheit", `<p>Jede Nacht wird nachgerechnet, was diese Seite am Vortag für jeden Zug erwartet hätte, und mit der tatsächlichen Verspätung verglichen. Benutzt wird dabei die Tabelle, die an dem Tag galt; sie kannte den Tag also noch nicht.</p>
+      <p>Letzte ${bw.tage} Tage (${datum(bw.von)} bis ${datum(bw.bis)}), ${Number(bw.abfahrten).toLocaleString("de-DE")} Abfahrten, jeweils 10 Minuten vor Abfahrt:</p>
+      <ul><li>Abweichung im Schnitt: <b>${mn(bw.abw_prognose)} min</b> (App: ${mn(bw.abw_app)} min)</li>
+      <li>Systematisch zu optimistisch um: ${mn(bw.bias_prognose)} min (App: ${mn(bw.bias_app)} min)</li>
+      <li>Auf 2 Minuten genau: ${pz(bw.treffer2_prognose)} (App: ${pz(bw.treffer2_app)})</li>
+      <li>Tatsächliche Verspätung lag in der Spanne „meist X–Y“: ${pz(bw.in_spanne)}</li>
+      <li>Züge mit 6+ Minuten: ${pz(bw.warn_prognose_erkannt)} rechtzeitig gewarnt (App: ${pz(bw.warn_app_erkannt)}); ${pz(bw.warn_prognose_berechtigt)} der Warnungen berechtigt</li></ul>
+      <p>Alle Tageswerte stehen in ergebnisse/prognose_bewertung.csv. Damit lässt sich jede Änderung an der Berechnung vorher prüfen.</p>`];
+  },
   ankunft: ["Ankunft", `<p><b>Plan</b>: Ankunftszeit laut Fahrplan. Berechnet aus den typischen Fahrzeiten zwischen den Stationen im offiziellen Fahrplan (hvv Open Data) und, wo möglich, aus der Planzeit desselben Zuges an deinem Ziel.</p>
     <p><b>≈</b>: erwartete Ankunft = Plan + erwartete Verspätung. Wenn derselbe Zug am Ziel (bzw. am letzten Halt davor) schon in den Live-Daten steht, gilt dessen Erwartung, sonst die an deiner Startstation. Aufholen oder weiteres Verspäten unterwegs ist darin nur enthalten, soweit es sich in den Live-Daten schon zeigt.</p>
     <p>Die Schnittstelle liefert keine Ankunftszeiten, nur Abfahrten. Die Ankunft ist deshalb immer eine Schätzung, meist auf ±1 Minute genau.</p>`],
@@ -358,7 +374,7 @@ const INFO = {
     <p>Die Zahl beruht darauf, was in vergleichbaren Situationen tatsächlich passiert ist. Vergleichbar heißt gleich in vier Merkmalen:</p>
     <ul><li>Zeit bis zur Abfahrt (0, 5, 10, 15, 20 oder 30 min)</li><li>was die App zeigte (0, 1–2, 3–4, 5–7, über 7 min)</li>
     <li>Lage der Linie (unter 1, 1–3, 3–6, über 6 min)</li><li>Halt unterwegs oder Startbahnhof</li></ul>
-    <p>Die große Zahl ist der Mittelwert der tatsächlichen Verspätung dieser Fälle, „meist X–Y“ die Spanne, in die 6 von 10 Fällen fielen (20- bis 80-%-Quantil). Gibt es weniger als 30 Fälle, wird eine gröbere Gruppe genommen. Die Erwartung ist nie kleiner als die App-Anzeige.</p>
+    <p>Die große Zahl ist der Mittelwert der tatsächlichen Verspätung dieser Fälle, „meist X–Y“ die mittlere Spanne dieser Fälle (20- bis 80-%-Quantil; weil die Schnittstelle nur ganze Minuten meldet, fallen in der Praxis etwa 3 von 4 Zügen hinein). Gibt es weniger als 30 Fälle, wird eine gröbere Gruppe genommen. Die Erwartung ist nie kleiner als die App-Anzeige.</p>
     <p><b>Farben:</b> grün unter 3 min, gelb 3–5 min, rot ab 6 min oder Ausfall.</p>
     <p>Die Erwartung gilt für die Abfahrt an deiner Startstation. Tippe auf das i neben einer Erwartung, um die Grundlage genau dieses Zuges zu sehen.</p>`],
   alternative: ["Alternative prüfen", `<p>Erscheint, wenn wir 6 Minuten oder mehr erwarten. Das ist die Schwelle, ab der die S-Bahn selbst einen Zug als unpünktlich zählt.</p>
@@ -373,7 +389,7 @@ const LAGE_TEXT = { "<1": "ruhig (Ø unter 1 min)", "1-3": "leicht verspätet (�
 
 const datum = (d) => d ? d.slice(8, 10) + "." + d.slice(5, 7) + "." : "";
 function abfahrtInfo(a, x) {
-  if (x.zelle === undefined && x.faelle) return [`${x.soll} ab ${a.station}`, `<p>Grundlage: ${Number(x.faelle).toLocaleString("de-DE")} vergleichbare Fälle. Sie waren im Mittel ${minuten(x.erwartet_min)} min zu spät, 6 von 10 lagen zwischen ${x.von_min} und ${x.bis_min} min. Die genauen Merkmale erscheinen ab dem nächsten Sammel-Lauf.</p>`];
+  if (x.zelle === undefined && x.faelle) return [`${x.soll} ab ${a.station}`, `<p>Grundlage: ${Number(x.faelle).toLocaleString("de-DE")} vergleichbare Fälle. Sie waren im Mittel ${minuten(x.erwartet_min)} min zu spät, die mittlere Spanne war ${x.von_min} bis ${x.bis_min} min. Die genauen Merkmale erscheinen ab dem nächsten Sammel-Lauf.</p>`];
   if (!x.zelle) return [`${x.soll} ab ${a.station}`, `<p>Für diese Situation gibt es noch keine Vergleichsfälle. Angezeigt wird deshalb nur der App-Wert.</p>`];
   const [art, vorlauf, anz, lage] = x.zelle.split("|"), t = letzterStand.tabelle || {};
   const merkmale = [`<li>${art === "start" ? "Startbahnhof" : "Halt unterwegs"}</li>`, vorlauf === "0" ? "<li>kurz vor oder bei Abfahrt</li>" : `<li>etwa ${vorlauf} min vor Abfahrt</li>`,
@@ -381,7 +397,7 @@ function abfahrtInfo(a, x) {
     lage === "*" ? "<li>Lage der Linie nicht berücksichtigt (zu wenige Fälle oder Daten)</li>"
       : `<li>Linie ${art === "start" ? "in Gegenrichtung " : ""}${LAGE_TEXT[lage]}${x.lage_min != null ? `, gerade Ø ${x.lage_min.toLocaleString("de-DE")} min` : ""}</li>`];
   return [`${x.soll} ab ${a.station}`, `<p>Verglichen mit früheren Zügen in derselben Situation:</p><ul>${merkmale.join("")}</ul>
-    <p>Davon gab es <b>${Number(x.faelle).toLocaleString("de-DE")} Fälle</b>${t.tage ? ` an ${t.tage} Tagen (${datum(t.erster_tag)} bis ${datum(t.letzter_tag)})` : ""}. Sie waren im Mittel <b>${minuten(x.erwartet_min)} min</b> zu spät, 6 von 10 lagen zwischen ${x.von_min} und ${x.bis_min} min, ${Math.round(x.anteil_ab5 * 100)} % kamen 5 Minuten oder später.</p>
+    <p>Davon gab es <b>${Number(x.faelle).toLocaleString("de-DE")} Fälle</b>${t.tage ? ` an ${t.tage} Tagen (${datum(t.erster_tag)} bis ${datum(t.letzter_tag)})` : ""}. Sie waren im Mittel <b>${minuten(x.erwartet_min)} min</b> zu spät, die mittlere Spanne war ${x.von_min} bis ${x.bis_min} min, ${Math.round(x.anteil_ab5 * 100)} % kamen 5 Minuten oder später.</p>
     ${x.app_min != null && x.app_min >= x.erwartet_min ? "<p>Die Erwartung entspricht hier der App-Anzeige, weil sie nie darunter liegen soll.</p>" : ""}`];
 }
 
@@ -397,7 +413,7 @@ document.addEventListener("click", (e) => {
       const z = zeilenDaten[b.dataset.abf];
       return z && infoZeigen(...abfahrtInfo({ station: z.station }, z.x));
     }
-    const k = b.dataset.info, eintrag = k.startsWith("lage-") ? INFO.lage(k.slice(5)) : INFO[k];
+    const k = b.dataset.info, eintrag = k.startsWith("lage-") ? INFO.lage(k.slice(5)) : typeof INFO[k] === "function" ? INFO[k]() : INFO[k];
     if (eintrag) infoZeigen(...eintrag);
     return;
   }

@@ -24,6 +24,7 @@ import pandas as pd
 
 WURZEL = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(WURZEL / "sammler"))
+sys.path.insert(0, str(WURZEL / "auswertung"))
 import lage as lg  # noqa: E402
 
 PRUEF_TAGE = 2
@@ -98,6 +99,16 @@ def _zelle(tab: dict, L: int, an: str, la: str) -> dict | None:
     return None
 
 
+def bewertung_lesen() -> dict | None:
+    """Kurzfassung der täglichen Bewertung (auswertung/prognose_bewertung.py) für die Live-Seite."""
+    pfad = WURZEL / "ergebnisse" / "prognose_bewertung.csv"
+    if not pfad.exists():
+        return None
+    import prognose_bewertung as pb  # noqa: PLC0415
+
+    return pb.zusammenfassung(pd.read_csv(pfad, dtype={"datum": str}))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--endstand", required=True)
@@ -118,6 +129,7 @@ def main() -> int:
                    "anzeige_klassen": [k[0] for k in lg.ANZEIGE_KLASSEN], "lage_klassen": [k[0] for k in lg.LAGE_KLASSEN],
                    "min_faelle": lg.MIN_FAELLE},
         "guete": guete(f),
+        "bewertung": bewertung_lesen(),
         "zellen": zellen_berechnen(f),
     }
     aus = Path(args.ausgabe)
