@@ -61,6 +61,15 @@ def ist_s1_bauarbeit(zusammenfassung: str | None, geplant: bool, linien: set[str
     return bool(geplant) and "S1" in linien and any(w in text for w in BAU_WOERTER)
 
 
+NEBENSACHEN = ("barrierefrei", "aufzug", "aufzüge", "fahrstuhl", "rolltreppe", "fahrtreppe", "treppe", "zugang")
+
+
+def ist_nebensache(zusammenfassung: str | None) -> bool:
+    """Hinweise, die den Zugverkehr nicht betreffen (Barrierefreiheit, Aufzüge, Treppen, Zugänge)."""
+    text = zusammenfassung.lower() if isinstance(zusammenfassung, str) else ""
+    return any(w in text for w in NEBENSACHEN)
+
+
 def linien_aus_orten(orte) -> set[str]:
     if not isinstance(orte, (str, list)):
         return set()

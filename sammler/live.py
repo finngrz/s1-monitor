@@ -90,6 +90,8 @@ class LiveStand:
         for m in meldungen:
             geplant = bool(m.get("planned"))
             linien = lg.linien_aus_orten(m.get("locations"))
+            if lg.ist_nebensache(m.get("summary")):
+                continue  # Barrierefreiheit, Aufzüge u. ä.: zeigt die hvv-App ohnehin
             if geplant:
                 if not lg.ist_s1_bauarbeit(m.get("summary"), True, linien):
                     continue

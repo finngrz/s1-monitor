@@ -90,3 +90,15 @@ def test_bewertung_kennzahlen():
     k = pb.kennzahlen(g)
     assert k["n"] == 4 and k["warn_app_erkannt"] == 0.5 and k["warn_prognose_erkannt"] == 1.0
     assert k["warn_prognose_berechtigt"] == round(2 / 3, 3) and k["in_spanne"] == 1.0
+
+
+def test_meldungen_ohne_nebensachen():
+    L = LiveStand(CFG["live"], REIHE, {})
+    gueltig = [{"begin": "2026-11-03T00:00:00.000+0100", "end": "2026-11-04T00:00:00.000+0100"}]
+    ort = [{"line": {"name": "S1"}}]
+    L.meldungen_aufnehmen([
+        {"summary": "Kein barrierefreier Zugang in Alte Wöhr (Stadtpark).", "planned": False, "locations": ort, "validities": gueltig},
+        {"summary": "Verspätungen auf der S1", "planned": False, "locations": ort, "validities": gueltig},
+        {"summary": "Busse statt S-Bahn zw. A u. B", "planned": True, "locations": ort, "validities": gueltig},
+        {"summary": "Aufzug Barmbek außer Betrieb", "planned": True, "locations": ort, "validities": gueltig}], JETZT)
+    assert [m["text"] for m in L.meldungen] == ["Busse statt S-Bahn zw. A u. B", "Verspätungen auf der S1"]
