@@ -192,7 +192,10 @@ function zeigen(d) {
       <div class="wert">${m == null ? "–" : zahl(m) + "&nbsp;min"}</div>
       <span class="zustand z-${lageStufe(m)}">${lageText(m)}</span>${vorher}</div>`;
   }).join("");
-  $("meldungen").innerHTML = (d.meldungen || []).map((t) => `<div class="meldung">⚠ ${t.replace(/[<>&]/g, "")}<button class="i" data-info="meldung" aria-label="Erklärung: Störungsmeldung">i</button></div>`).join("");
+  $("meldungen").innerHTML = (d.meldungen || []).map((m) => {
+    const t = (typeof m === "string" ? m : m.text).replace(/[<>&]/g, ""), bau = typeof m === "object" && m.geplant;
+    return `<div class="meldung">${bau ? "🚧 <b>Bauarbeiten:</b> " : "⚠ "}${t}<button class="i" data-info="${bau ? "bau" : "meldung"}" aria-label="Erklärung: Meldung">i</button></div>`;
+  }).join("");
   $("wahl-karte").hidden = !(d.stationen && F);
   if (d.stationen && F) { strecke(d); } else $("ansichten").innerHTML = (d.stationen ? "" : `<p class="leise">Die freie Wahl von Start und Ziel erscheint ab dem nächsten Sammel-Lauf.</p>`) + d.ansichten.map((a, ai) => {
     const zeilen = a.abfahrten.length ? a.abfahrten.map((x, xi) => {
@@ -320,10 +323,19 @@ function strecke(d) {
       + (ampel === "rot" ? `<div class="tipp">Alternative prüfen<button class="i" data-info="alternative" aria-label="Erklärung: Alternative prüfen">i</button></div>` : "");
     return `<tr><td class="zeit">${o.soll}</td><td class="app">${app}</td>
       <td><span class="punkt p-${ampel}" aria-hidden="true"></span>${erw}${tipp}</td><td class="an">${anText}</td></tr>`;
-  }).join("") : `<tr><td colspan="4" class="leise">Keine passenden Abfahrten in den nächsten 60 Minuten.</td></tr>`;
+  }).join("") : `<tr><td colspan="4" class="leise">${keineZuege(d, p)}</td></tr>`;
   const start = ["Poppenbüttel", "Wedel", "Hamburg Airport (Flughafen)"].includes(wahl[0]);
   $("ansichten").innerHTML = `<section class="karte"><h2>${wahl[0]} → ${wahl[1]}${start ? ib("startbahnhof", "Startbahnhof") : ""}</h2>
     <table><thead><tr><th>Ab${ib("plan", "Ab")}</th><th>App${ib("app", "App")}</th><th>Verspätung${ib("erwartet", "Erwartete Verspätung")}</th><th>Ankunft${ib("ankunft", "Ankunft")}</th></tr></thead><tbody>${zeilen}</tbody></table></section>`;
+}
+// Erklärung, wenn kein Zug von Start bis Ziel durchfährt (z. B. bei Bauarbeiten nur Teilstrecken)
+function keineZuege(d, p) {
+  const alle = (((d.stationen[wahl[0]] || {})[p.g]) || []);
+  if (!alle.length) return `Keine Abfahrten ab ${wahl[0]} in diese Richtung in den nächsten 60 Minuten.`;
+  const enden = [...new Set(alle.flatMap((x) => x[9].split(/ \| | \/ /).map((z) => z.trim())))];
+  const bau = (d.meldungen || []).some((m) => typeof m === "object" && m.geplant);
+  return `Kein Zug fährt gerade von ${wahl[0]} bis ${wahl[1]} durch. Ab ${wahl[0]} fahren die Züge in diese Richtung nur bis <b>${enden.join(", ")}</b>.`
+    + (bau ? " Grund sind vermutlich die Bauarbeiten oben; wähle eine Teilstrecke, z. B. bis zur Endstation." : " Wähle eine Teilstrecke.");
 }
 function lgZulauf(st, g) { return ["Poppenbüttel", "Wedel", "Hamburg Airport (Flughafen)"].includes(st) ? (g === "west" ? "ost" : "west") : g; }
 
@@ -347,7 +359,9 @@ const INFO = {
     <ul><li>ruhig: unter 1 min</li><li>leicht verspätet: 1 bis unter 3 min</li><li>gestört: 3 bis unter 6 min</li><li>stark gestört: ab 6 min</li></ul>
     <p><b>„wird schlechter“ / „bessert sich“</b>: Vergleich mit der durchschnittlichen Verspätung vor 10 Minuten (in Klammern). Ab einer Minute Unterschied, sonst „unverändert“.</p>
     <p>Warum das hilft: Verspätungen pflanzen sich fort. In unseren Daten kamen als pünktlich angezeigte Züge bei gestörter Linie im Mittel rund 5 Minuten zu spät. Das Signal trägt etwa 20–30 Minuten voraus.</p>`],
-  meldung: ["Störungsmeldung", `<p>Aktuelle, ungeplante Meldung des hvv, die die S1 betrifft und gerade gültig ist. Abgerufen alle 5 Minuten über die hvv-Schnittstelle. Geplante Bauarbeiten werden hier nicht angezeigt.</p>`],
+  meldung: ["Störungsmeldung", `<p>Aktuelle, ungeplante Meldung des hvv, die die S1 betrifft und gerade gültig ist. Abgerufen alle 5 Minuten über die hvv-Schnittstelle.</p>`],
+  bau: ["Bauarbeiten", `<p>Geplante Bauarbeiten des hvv, die den S1-Zugverkehr gerade unterbrechen (z. B. „Busse statt S-Bahn“). Andere geplante Hinweise (Aufzüge, Umstiege) werden nicht angezeigt.</p>
+    <p>In dieser Zeit fährt die S1 nur auf Teilstrecken. In der Statistik zählen solche Stunden als Sonderlage und gehen standardmäßig nicht in die Pünktlichkeit ein. Auch die Prognose-Tabelle lernt nicht aus ihnen.</p>`],
   plan: ["Ab (Plan)", `<p>Abfahrtszeit laut Fahrplan an deiner Startstation. Gezeigt werden die Abfahrten der nächsten 60 Minuten, die laut letzter Meldung noch nicht abgefahren sind, und nur Züge, die wirklich bis zu deinem Ziel fahren (z. B. nicht die Züge, die in Ohlsdorf zum Flughafen abbiegen, wenn du nach Poppenbüttel willst).</p>`],
   ast: ["Poppenbüttel-Teil", `<p>Die Züge Richtung Poppenbüttel und Flughafen fahren in der Innenstadt oft gekoppelt („Poppenbüttel / Flughafen“) und werden in Ohlsdorf getrennt. Die Seite prüft, ob in Ohlsdorf zur passenden Zeit wirklich ein Teil nach Poppenbüttel angekündigt ist.</p>
     <ul><li><b>fällt laut hvv aus</b>: Der Poppenbüttel-Teil ist in Ohlsdorf als Ausfall gemeldet.</li>

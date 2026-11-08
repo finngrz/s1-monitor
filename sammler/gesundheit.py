@@ -92,7 +92,7 @@ def datenlage_pruefen(endstand: pd.DataFrame, probleme: list[str]) -> dict:
         probleme.append("Endstand von gestern enthält keine S1-Abfahrten")
         return {}
     anteil = float(q["ohne"].sum() / q["n"].sum())
-    schwach = [int(h) for h in q.loc[q["ausgeschlossen"], "stunde"]]
+    schwach = [int(h) for h in q.loc[q["luecke"], "stunde"]]  # Bauarbeiten sind kein Datenproblem
     if anteil > MAX_OHNE_ECHTZEIT_TAG or len(schwach) >= MAX_SCHWACHE_STUNDEN:
         probleme.append(f"Echtzeitdaten unvollständig: {anteil:.0%} der S1-Abfahrten ohne Verspätungswert, "
                         f"{len(schwach)} Stunde(n) aus der Statistik ausgeschlossen ({schwach})")

@@ -92,9 +92,10 @@ def gruende(roh: str) -> list[str]:
     return [a.get("value") for a in attribute if "REALTIME_REASON" in (a.get("types") or []) and a.get("value")]
 
 
-ENDSTAND_VERSION = 4  # 2: Züge über Station, Linie, Soll-Zeit und Richtung erkannt (serviceId wechselt)
+ENDSTAND_VERSION = 5  # 2: Züge über Station, Linie, Soll-Zeit und Richtung erkannt (serviceId wechselt)
 #                       3: zusätzlich Prognose-Merkmale (Anzeige und Lage der Linie je Vorlauf)
 #                       4: veraltete Antworten der Schnittstelle (Flattern) verworfen, Spalte „verworfen“
+#                       5: Spalte „bauarbeiten“ (geplante S1-Bauarbeit mit Ersatzverkehr zur Soll-Zeit)
 
 
 def stationsreihenfolge() -> list[str]:
@@ -112,7 +113,8 @@ def richtung_gruppe(df: pd.DataFrame, reihenfolge: list[str]) -> pd.Series:
     return rg.where(bahn, "ziel:" + df["richtung"].fillna(""))
 
 
-def endstand_tag(beobachtungen: pd.DataFrame, tag: date, reihenfolge: list[str] | None = None) -> pd.DataFrame:
+def endstand_tag(beobachtungen: pd.DataFrame, tag: date, reihenfolge: list[str] | None = None,
+                 bauzeiten: list | None = None) -> pd.DataFrame:
     """Eine Zeile pro Abfahrt mit Soll-Datum `tag` (Berliner Zeit).
 
     Ein Zug wird über Station, Linie, Soll-Zeit und Richtung erkannt, nicht über die serviceId, weil die
@@ -160,6 +162,9 @@ def endstand_tag(beobachtungen: pd.DataFrame, tag: date, reihenfolge: list[str] 
     erg["grund"] = grund.reindex(erg.index)
     erg.insert(0, "datum", tag.isoformat())
     erg["endstand_version"] = ENDSTAND_VERSION
+    erg["bauarbeiten"] = False
+    for a, b in bauzeiten or []:
+        erg.loc[(erg["soll_utc"] >= a) & (erg["soll_utc"] <= b), "bauarbeiten"] = True
     erg = prognose_merkmale(alle, erg)
     return erg.reset_index().rename(columns={"fahrt": "schluessel"}).sort_values(
         ["soll_utc", "abfrage_station", "linie"], kind="stable")
@@ -256,6 +261,20 @@ def endstand_aktuell(daten: Path, tag: str) -> bool:
         return False
 
 
+def bauzeiten_laden(daten: Path, tage: list[str]) -> list:
+    """Zeiträume geplanter S1-Bauarbeiten mit Ersatzverkehr aus den gespeicherten hvv-Meldungen."""
+    dateien = [p for t in tage for p in sorted((daten / "meldungen" / t).glob("*.parquet"))]
+    if not dateien:
+        return []
+    m = pd.concat([pd.read_parquet(d, columns=["meldung_id", "geplant", "zusammenfassung", "orte", "gueltigkeit"])
+                   for d in dateien], ignore_index=True).drop_duplicates(["meldung_id", "gueltigkeit"])
+    zeiten = []
+    for _, r in m.iterrows():
+        if lg.ist_s1_bauarbeit(r["zusammenfassung"], bool(r["geplant"]), lg.linien_aus_orten(r["orte"])):
+            zeiten += lg.zeitraeume(r["gueltigkeit"])
+    return sorted(set(zeiten))
+
+
 def endstaende_bauen(daten: Path, heute: date, jetzt_lokal: datetime) -> list[str]:
     """Baut fehlende und veraltete Endstände für alle Tage, deren Rohdaten noch im Repository liegen."""
     tage = [date.fromisoformat(t) for t in ordner_im_repo(daten, "abfahrten")]
@@ -272,9 +291,11 @@ def endstaende_bauen(daten: Path, heute: date, jetzt_lokal: datetime) -> list[st
         if tag.isoformat() in vorhanden and endstand_aktuell(daten, tag.isoformat()):
             continue
         nachbarn = [(tag + timedelta(days=k)).isoformat() for k in (-1, 0, 1)]
-        sichtbar_machen(daten, [f"/abfahrten/{n}/" for n in nachbarn])
+        # Bauarbeiten werden oft Tage vorher angekündigt und nur bei Änderungen neu gespeichert
+        meldetage = [(tag + timedelta(days=k)).isoformat() for k in range(-14, 2)]
+        sichtbar_machen(daten, [f"/abfahrten/{n}/" for n in nachbarn] + [f"/meldungen/{n}/" for n in meldetage])
         dateien = [p for n in nachbarn for p in sorted((daten / "abfahrten" / n).glob("*.parquet"))]
-        e = endstand_tag(lies(dateien), tag, reihenfolge)
+        e = endstand_tag(lies(dateien), tag, reihenfolge, bauzeiten_laden(daten, meldetage))
         if e.empty:
             continue
         ziel = endstand_pfad(daten, tag.isoformat())

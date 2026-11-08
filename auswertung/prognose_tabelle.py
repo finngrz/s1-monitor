@@ -39,6 +39,8 @@ def faelle(endstand: pd.DataFrame) -> pd.DataFrame:
     s = endstand[(endstand["linie"] == "S1") & (endstand["verkehrsmittel"] == "TRAIN")
                  & endstand["richtung_gruppe"].isin(["west", "ost"]) & ~endstand["ausfall"].fillna(False).astype(bool)]
     s = s[s["anzeige_0_s"].notna() | s["lage_0_s"].notna()]  # nur Tage mit Prognose-Merkmalen (Version 3)
+    if "bauarbeiten" in s:
+        s = s[~s["bauarbeiten"].fillna(False).astype(bool)]  # Ersatzverkehr: anderer Betrieb, nicht mitlernen
     start = s["abfrage_station"].isin(lg.STARTBAHNHOEFE)
     y = np.where(start, s["verspaetung_folgehalt_s"], s["verspaetung_s"]) / 60
     teile = []

@@ -16,6 +16,9 @@ Verspätung am nächsten Halt, weil die Abfahrt am Startbahnhof selbst meist nic
 
 from __future__ import annotations
 
+import json
+from datetime import datetime
+
 VORLAEUFE_MIN = [0, 5, 10, 15, 20, 30]
 LAGE_FENSTER_MIN = 20
 LAGE_MIN_ABFAHRTEN = 3
@@ -44,6 +47,47 @@ def plausibel(vorher_v: float | None, vorher_ausfall: bool, v: float | None, aus
     if v == 0 and vorher_v is not None and vorher_v >= FLATTERN_AB_S:
         return None, False, True
     return v, False, False
+
+
+BAU_WOERTER = ("statt s-bahn", "sperrung", "gesperrt", "keine s-bahn", "keine s1", "ersatzverkehr", "pendelverkehr")
+
+
+def ist_s1_bauarbeit(zusammenfassung: str | None, geplant: bool, linien: set[str]) -> bool:
+    """Geplante Bauarbeit, die den S1-Zugverkehr unterbricht (z. B. „Busse statt S-Bahn zw. … u. …“).
+
+    Aufzugsarbeiten, Umstiegshinweise oder Sperrungen anderer Linien zählen nicht.
+    """
+    text = zusammenfassung.lower() if isinstance(zusammenfassung, str) else ""
+    return bool(geplant) and "S1" in linien and any(w in text for w in BAU_WOERTER)
+
+
+def linien_aus_orten(orte) -> set[str]:
+    if not isinstance(orte, (str, list)):
+        return set()
+    if isinstance(orte, str):
+        try:
+            orte = json.loads(orte)
+        except ValueError:
+            return set()
+    return {(o.get("line") or {}).get("name") for o in (orte or []) if isinstance(o, dict)} - {None}
+
+
+def zeitraeume(gueltigkeit) -> list[tuple[datetime, datetime]]:
+    if not isinstance(gueltigkeit, (str, list)):
+        return []
+    if isinstance(gueltigkeit, str):
+        try:
+            gueltigkeit = json.loads(gueltigkeit)
+        except ValueError:
+            return []
+    erg = []
+    for g in gueltigkeit or []:
+        try:
+            erg.append((datetime.strptime(g["begin"], "%Y-%m-%dT%H:%M:%S.%f%z"),
+                        datetime.strptime(g["end"], "%Y-%m-%dT%H:%M:%S.%f%z")))
+        except (KeyError, TypeError, ValueError):
+            continue
+    return erg
 
 
 def anzeige_klasse(minuten: float | None) -> str:

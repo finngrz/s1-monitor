@@ -127,6 +127,19 @@ der Abfahrt stammen; für die Live-Anzeige ist die Regel wesentlich. Anteil je T
 (`anteil_flattern`). Entscheidung: vorerst beobachten; der Gesundheits-Check meldet sich, wenn an 7 Tagen
 in Folge mehr als 10 % der S1-Abfahrten flattern. Dann Meldung an die Hochbahn (Nutzungsbedingungen).
 
+**Bauarbeiten (ab 08.11.2026, Endstand-Version 5):** Geplante Bauarbeiten mit Ersatzverkehr („Busse statt
+S-Bahn zw. … u. …“) werden aus den gespeicherten hvv-Meldungen erkannt: geplante Meldung, Linie S1 betroffen,
+Text enthält „statt S-Bahn“, „Sperrung“, „gesperrt“, „keine S-Bahn“, „Ersatz-“ oder „Pendelverkehr“
+(Aufzüge, Umstiegshinweise u. ä. zählen nicht). Abfahrten in diesem Zeitraum bekommen in der
+Endstand-Tabelle `bauarbeiten = true`. Stunden, in denen mindestens die Hälfte der S1-Abfahrten betroffen
+ist, gelten als Sonderlage: Sie gehen standardmäßig nicht in die Pünktlichkeit ein (die S1 fährt dann nur
+auf Teilstrecken, oft im 20-Minuten-Takt, und ist mit dem Regelbetrieb nicht vergleichbar), sind im
+Dashboard zuschaltbar und werden je Tag ausgewiesen; die Prognose-Tabelle lernt nicht aus ihnen.
+Bisher: 30.10.–02.11. (Altona–Sternschanze; für Oktober nicht nachträglich markierbar, da die Rohdaten
+archiviert sind) und 07.–09.11. (Wandsbeker Chaussee–Barmbek, S1 Barmbek–Ohlsdorf im 20-Minuten-Takt,
+Umstieg in Ohlsdorf). Ausfälle werden in dieser Zeit gegen den Baufahrplan gemessen, so wie ihn die
+Schnittstelle liefert.
+
 **Offener Punkt (05.11.2026):** Datenlücken können mit Störungen zusammenfallen (04.11., 7 Uhr: 22 % ohne
 Wert bei Ø 5,4 min Verspätung und 15 Ausfällen). Läge eine solche Stunde über 25 %, würde die
 Ausschlussregel ausgerechnet eine gestörte Stunde herausnehmen. Seit 03.11. ist keine Stunde betroffen.

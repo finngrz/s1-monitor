@@ -102,12 +102,18 @@ def vorbereiten(endstand: pd.DataFrame, reihenfolge: list[str]) -> pd.DataFrame:
 
 
 def echtzeit_qualitaet(s: pd.DataFrame) -> pd.DataFrame:
-    """Je Tag und Stunde: Zahl der S1-Abfahrten (ohne Startbahnhöfe) und Anteil ohne Verspätungswert."""
+    """Je Tag und Stunde: Zahl der S1-Abfahrten (ohne Startbahnhöfe), Anteil ohne Verspätungswert und Anteil
+    während geplanter Bauarbeiten mit Ersatzverkehr. Beides sind Sonderlagen, die nicht in die Statistik des
+    Regelbetriebs gehören (abschaltbar im Dashboard)."""
     b = s[~s["abfrage_station"].isin(STARTBAHNHOEFE)]
     ohne = b["verspaetung_s"].isna() & ~b["ausfall"]
-    q = (b.assign(ohne=ohne).groupby(["datum", "stunde"]).agg(n=("ohne", "size"), ohne=("ohne", "sum")).reset_index())
+    bau = b["bauarbeiten"].fillna(False).astype(bool) if "bauarbeiten" in b else pd.Series(False, index=b.index)
+    q = (b.assign(ohne=ohne, bau=bau).groupby(["datum", "stunde"])
+         .agg(n=("ohne", "size"), ohne=("ohne", "sum"), bau=("bau", "sum")).reset_index())
     q["anteil_ohne"] = q["ohne"] / q["n"]
-    q["ausgeschlossen"] = (q["n"] >= MIN_ABFAHRTEN_STUNDE) & (q["anteil_ohne"] > MAX_OHNE_ECHTZEIT)
+    q["luecke"] = (q["n"] >= MIN_ABFAHRTEN_STUNDE) & (q["anteil_ohne"] > MAX_OHNE_ECHTZEIT)
+    q["bauarbeiten"] = q["bau"] / q["n"] >= 0.5
+    q["ausgeschlossen"] = q["luecke"] | q["bauarbeiten"]
     return q
 
 
@@ -123,9 +129,11 @@ def datenlage_meta(q: pd.DataFrame) -> dict:
     tage = []
     for datum, g in q.groupby("datum"):
         tage.append({"datum": datum, "anteil_ohne": round(float(g["ohne"].sum() / g["n"].sum()), 4),
-                     "ausgeschlossene_stunden": [int(h) for h in g.loc[g["ausgeschlossen"], "stunde"]]})
+                     "ausgeschlossene_stunden": [int(h) for h in g.loc[g["luecke"], "stunde"]],
+                     "bauarbeiten_stunden": [int(h) for h in g.loc[g["bauarbeiten"], "stunde"]]})
     return {"max_ohne_echtzeit": MAX_OHNE_ECHTZEIT, "min_abfahrten_stunde": MIN_ABFAHRTEN_STUNDE,
-            "stunden_ausgeschlossen": int(q["ausgeschlossen"].sum()), "stunden_gesamt": int(len(q)), "tage": tage}
+            "stunden_ausgeschlossen": int(q["ausgeschlossen"].sum()), "stunden_gesamt": int(len(q)),
+            "stunden_luecken": int(q["luecke"].sum()), "stunden_bauarbeiten": int(q["bauarbeiten"].sum()), "tage": tage}
 
 
 def abschnitte_entlang(s: pd.DataFrame, reihenfolge: list[str]) -> dict:

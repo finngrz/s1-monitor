@@ -85,23 +85,22 @@ class LiveStand:
             d["ziele"].add(zeile["richtung"])
 
     def meldungen_aufnehmen(self, meldungen: list[dict], jetzt_utc: datetime) -> None:
+        """Gerade gültige S1-Meldungen: Störungen (ungeplant) und Bauarbeiten mit Ersatzverkehr (geplant)."""
         aktiv = []
         for m in meldungen:
-            if m.get("planned"):
-                continue
-            text = json.dumps([m.get("summary"), m.get("locations")], ensure_ascii=False)
-            if '"S1"' not in text and " S1" not in text and "S1 " not in text:
-                continue
-            for v in m.get("validities") or []:
-                try:
-                    a = datetime.strptime(v["begin"], "%Y-%m-%dT%H:%M:%S.%f%z")
-                    b = datetime.strptime(v["end"], "%Y-%m-%dT%H:%M:%S.%f%z")
-                except (KeyError, ValueError):
+            geplant = bool(m.get("planned"))
+            linien = lg.linien_aus_orten(m.get("locations"))
+            if geplant:
+                if not lg.ist_s1_bauarbeit(m.get("summary"), True, linien):
                     continue
-                if a <= jetzt_utc <= b:
-                    aktiv.append((m.get("summary") or "Störungsmeldung").strip())
-                    break
-        self.meldungen = list(dict.fromkeys(aktiv))[:3]
+            else:
+                text = json.dumps([m.get("summary"), m.get("locations")], ensure_ascii=False)
+                if "S1" not in linien and '"S1"' not in text and " S1" not in text and "S1 " not in text:
+                    continue
+            if any(a <= jetzt_utc <= b for a, b in lg.zeitraeume(m.get("validities"))):
+                aktiv.append({"text": (m.get("summary") or "Meldung").replace("🚧", "").strip(), "geplant": geplant})
+        eindeutig = {x["text"]: x for x in aktiv}
+        self.meldungen = sorted(eindeutig.values(), key=lambda x: not x["geplant"])[:4]
 
     def aufraeumen(self, jetzt_utc: datetime) -> None:
         grenze = jetzt_utc - timedelta(minutes=90)

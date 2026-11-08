@@ -61,7 +61,7 @@
       <input type="range" id="schwelle" min="1" max="10" value="3" aria-label="Schwelle in Minuten">
       <b id="schwelle-text">3 min</b> Verspätung</label>
     <label><input type="checkbox" id="ausfaelle" checked> Ausfälle zählen als unpünktlich</label>
-    <label title="Stunden, in denen die Schnittstelle für mehr als ein Viertel der Abfahrten keinen Wert geliefert hat"><input type="checkbox" id="luecken"> Stunden mit lückenhaften Echtzeitdaten einbeziehen</label>
+    <label title="Stunden mit lückenhaften Echtzeitdaten (über ein Viertel der Abfahrten ohne Wert) oder mit geplanten Bauarbeiten und Ersatzverkehr"><input type="checkbox" id="luecken"> Sonderlagen einbeziehen (Datenlücken, Bauarbeiten)</label>
     <label>Zeitraum <select id="zeitraum">
       <option value="7">letzte 7 Tage</option><option value="28">letzte 28 Tage</option>
       <option value="alle" selected>gesamt</option></select></label>
@@ -131,7 +131,7 @@
     <p class="erk">Abdeckung: Anteil der Minuten, in denen jede Station mindestens einmal erfolgreich abgefragt wurde (schwächste Station und Mittel).</p>
     <div style="overflow-x:auto"><table id="t-qualitaet"></table></div>
     <h3>Echtzeit-Datenlage</h3>
-    <p class="erk">Anteil der S1-Abfahrten, für die die Schnittstelle keinen Verspätungswert geliefert hat. Stunden mit mehr als <span id="dl-grenze"></span> ohne Wert werden aus allen Statistiken herausgenommen, damit fehlende Werte das Ergebnis nicht verzerren.</p>
+    <p class="erk">Anteil der S1-Abfahrten, für die die Schnittstelle keinen Verspätungswert geliefert hat. Stunden mit mehr als <span id="dl-grenze"></span> ohne Wert werden aus allen Statistiken herausgenommen, damit fehlende Werte das Ergebnis nicht verzerren. Ebenso Stunden mit geplanten Bauarbeiten und Ersatzverkehr (laut hvv-Meldung): Dann fährt die S1 nur auf Teilstrecken, das ist nicht mit dem Regelbetrieb vergleichbar.</p>
     <div style="overflow-x:auto"><table id="t-datenlage"></table></div>
   </section>
 
@@ -315,15 +315,16 @@ function datenlage() {
   const d = D.datenlage; if (!d) return;
   $("dl-grenze").textContent = fmtP(d.max_ohne_echtzeit);
   const t = d.tage.slice(-14).reverse();
-  $("t-datenlage").innerHTML = "<tr><th>Tag</th><th>ohne Verspätungswert</th><th>ausgeschlossene Stunden</th></tr>" +
-    t.map((r) => `<tr><td>${r.datum}</td><td>${fmtP(r.anteil_ohne)}</td><td>${r.ausgeschlossene_stunden.length ? r.ausgeschlossene_stunden.map((h) => h + " Uhr").join(", ") : "–"}</td></tr>`).join("");
+  const stunden = (l) => l && l.length ? l.map((h) => h + " Uhr").join(", ") : "–";
+  $("t-datenlage").innerHTML = "<tr><th>Tag</th><th>ohne Verspätungswert</th><th>ausgeschlossen: Datenlücken</th><th>ausgeschlossen: Bauarbeiten</th></tr>" +
+    t.map((r) => `<tr><td>${r.datum}</td><td>${fmtP(r.anteil_ohne)}</td><td>${stunden(r.ausgeschlossene_stunden)}</td><td>${r.bauarbeiten_stunden && r.bauarbeiten_stunden.length === 24 ? "ganzer Tag" : stunden(r.bauarbeiten_stunden)}</td></tr>`).join("");
 }
 
 fetch("daten/kennzahlen.json", { cache: "no-store" }).then((r) => r.json()).then((daten) => {
   D = daten;
   const m = D.meta, fmtD = (d) => d.slice(8, 10) + "." + d.slice(5, 7) + "." + d.slice(0, 4);
   $("banner").innerHTML = `<b>Probebetrieb:</b> Messung seit ${fmtD(m.erster_tag)}, bisher ${m.tage} Tag${m.tage === 1 ? "" : "e"} und ${fmtZ(m.abfahrten)} Abfahrten. Die Zahlen sind noch nicht belastbar und ändern sich mit jedem Tag. Bitte nicht zitieren.` +
-    (D.datenlage && D.datenlage.stunden_ausgeschlossen ? ` ${D.datenlage.stunden_ausgeschlossen} von ${D.datenlage.stunden_gesamt} Stunden sind wegen unvollständiger Echtzeitdaten der Schnittstelle nicht eingerechnet (siehe Datenqualität).` : "");
+    (D.datenlage && D.datenlage.stunden_ausgeschlossen ? ` ${D.datenlage.stunden_ausgeschlossen} von ${D.datenlage.stunden_gesamt} Stunden sind als Sonderlage nicht eingerechnet` + (D.datenlage.stunden_bauarbeiten != null ? ` (${D.datenlage.stunden_luecken} wegen unvollständiger Echtzeitdaten, ${D.datenlage.stunden_bauarbeiten} wegen Bauarbeiten mit Ersatzverkehr)` : "") + `, siehe Datenqualität.` : "");
   $("stand").textContent = `Stand: ${new Date(m.erzeugt_utc).toLocaleString("de-DE")} · Daten bis ${fmtD(m.letzter_tag)}`;
   qualitaet();
   datenlage();
