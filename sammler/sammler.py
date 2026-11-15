@@ -179,6 +179,10 @@ def main() -> int:
     naechster_live = time.monotonic() + 60  # erst eine volle Abfragerunde abwarten
 
     aufgaben = [(st, "ab") for st in stationen] + [(st, "an") for st in stationen if st.get("ankuenfte")]
+    # Jeder Abschnitt beginnt an einer anderen Station: Am Abschnittsende fällt sonst immer derselbe
+    # Streckenast (Ende der Liste) eine Runde aus, und dessen Abdeckung liegt dauerhaft niedriger.
+    versatz = int(time.time() // 60) % max(len(aufgaben), 1)
+    aufgaben = aufgaben[versatz:] + aufgaben[:versatz]
     abstand = max(cfg["zyklus_s"] / max(len(aufgaben), 1), 1.0 / cfg["max_abfragen_pro_s"])
     ende = time.monotonic() + args.dauer_min * 60
     naechste_meldung = time.monotonic()
