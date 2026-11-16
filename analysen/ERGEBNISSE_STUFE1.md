@@ -1,12 +1,12 @@
 # Ergebnisse Stufe 1: Fahrplan-Analysen
 
-Automatisch erzeugt am 09.11.2026 aus dem hvv-Soll-Fahrplan (gültig 20261002–20261212, Prüfsumme 2618dc1589da). **Alle Zahlen sind Plan-Werte ohne Verspätungen.** Was davon in der Realität ankommt, zeigt erst die Echtzeit-Erhebung ab Stufe 2.
+Automatisch erzeugt am 16.11.2026 aus dem hvv-Soll-Fahrplan (gültig 20261002–20261212, Prüfsumme 2618dc1589da). **Alle Zahlen sind Plan-Werte ohne Verspätungen.** Was davon in der Realität ankommt, zeigt erst die Echtzeit-Erhebung ab Stufe 2.
 
-Untersuchte Stichtage (typischer Fahrplan, kein Feiertag oder Sonderfahrplan): Werktag = Dienstag, 10.11.2026, Samstag = Samstag, 14.11.2026, Sonntag = Sonntag, 15.11.2026.
+Untersuchte Stichtage (typischer Fahrplan, kein Feiertag oder Sonderfahrplan): Werktag = Dienstag, 17.11.2026, Samstag = Samstag, 05.12.2026, Sonntag = Sonntag, 22.11.2026.
 
 ## F1: Warum dauert Stadthausbrücke → Poppenbüttel mal länger, mal kürzer?
 
-**Kurz:** Laut Plan dauert die direkte Fahrt am Dienstag, 10.11.2026 entweder **34 oder 36 Minuten**. Der Unterschied entsteht fast vollständig beim **Halt in Ohlsdorf**: Die längeren Fahrten stehen dort im Schnitt 2,9 Minuten, die kürzeren nur 1,0 Minuten.
+**Kurz:** Laut Plan dauert die direkte Fahrt am Dienstag, 17.11.2026 entweder **34 oder 36 Minuten**. Der Unterschied entsteht fast vollständig beim **Halt in Ohlsdorf**: Die längeren Fahrten stehen dort im Schnitt 2,9 Minuten, die kürzeren nur 1,0 Minuten.
 
 - 116 Fahrten brauchen 36 Minuten, 30 Fahrten (21 %) brauchen 34 Minuten.
 - Die 34-Minuten-Fahrten starten nur in diesen Zeitfenstern: 07:25–08:55, 15:15–18:25.
