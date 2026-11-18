@@ -1,9 +1,9 @@
 {
- "erzeugt_utc": "2026-11-17T12:21:35+00:00",
- "tage": 11,
+ "erzeugt_utc": "2026-11-18T12:08:35+00:00",
+ "tage": 12,
  "erster_tag": "2026-11-02",
- "letzter_tag": "2026-11-16",
- "abfahrten": 86952,
+ "letzter_tag": "2026-11-17",
+ "abfahrten": 95013,
  "regeln": {
   "vorlaeufe_min": [
    0,
@@ -30,453 +30,453 @@
   "min_faelle": 30
  },
  "guete": {
-  "lern_tage": 9,
+  "lern_tage": 10,
   "pruef_tage": 2,
   "je_vorlauf": [
    {
     "vorlauf": 0,
-    "n": 15806,
-    "abw_app_min": 2.9,
-    "abw_prognose_min": 2.25,
+    "n": 15569,
+    "abw_app_min": 2.1,
+    "abw_prognose_min": 1.73,
     "warnung_app": {
-     "erkannt": 0.405,
-     "berechtigt": 0.969
+     "erkannt": 0.485,
+     "berechtigt": 0.958
     },
     "warnung_prognose": {
-     "erkannt": 0.781,
-     "berechtigt": 0.663
+     "erkannt": 0.819,
+     "berechtigt": 0.595
     }
    },
    {
     "vorlauf": 5,
-    "n": 15806,
-    "abw_app_min": 3.33,
-    "abw_prognose_min": 2.48,
+    "n": 15569,
+    "abw_app_min": 2.55,
+    "abw_prognose_min": 1.95,
     "warnung_app": {
-     "erkannt": 0.279,
-     "berechtigt": 0.981
+     "erkannt": 0.327,
+     "berechtigt": 0.967
     },
     "warnung_prognose": {
-     "erkannt": 0.8,
-     "berechtigt": 0.607
+     "erkannt": 0.845,
+     "berechtigt": 0.535
     }
    },
    {
     "vorlauf": 10,
-    "n": 15806,
-    "abw_app_min": 3.66,
-    "abw_prognose_min": 2.66,
+    "n": 15569,
+    "abw_app_min": 2.85,
+    "abw_prognose_min": 2.13,
     "warnung_app": {
-     "erkannt": 0.187,
-     "berechtigt": 0.989
+     "erkannt": 0.223,
+     "berechtigt": 0.972
     },
     "warnung_prognose": {
-     "erkannt": 0.725,
-     "berechtigt": 0.613
+     "erkannt": 0.764,
+     "berechtigt": 0.544
     }
    },
    {
     "vorlauf": 15,
-    "n": 15806,
-    "abw_app_min": 3.9,
-    "abw_prognose_min": 2.81,
+    "n": 15569,
+    "abw_app_min": 3.06,
+    "abw_prognose_min": 2.29,
     "warnung_app": {
-     "erkannt": 0.12,
-     "berechtigt": 0.991
+     "erkannt": 0.139,
+     "berechtigt": 0.971
     },
     "warnung_prognose": {
-     "erkannt": 0.654,
-     "berechtigt": 0.605
+     "erkannt": 0.677,
+     "berechtigt": 0.531
     }
    },
    {
     "vorlauf": 20,
-    "n": 15806,
-    "abw_app_min": 4.06,
-    "abw_prognose_min": 2.94,
+    "n": 15569,
+    "abw_app_min": 3.2,
+    "abw_prognose_min": 2.43,
     "warnung_app": {
-     "erkannt": 0.076,
-     "berechtigt": 0.995
+     "erkannt": 0.086,
+     "berechtigt": 0.983
     },
     "warnung_prognose": {
-     "erkannt": 0.59,
-     "berechtigt": 0.589
+     "erkannt": 0.606,
+     "berechtigt": 0.512
     }
    },
    {
     "vorlauf": 30,
-    "n": 15806,
-    "abw_app_min": 4.26,
-    "abw_prognose_min": 3.15,
+    "n": 15569,
+    "abw_app_min": 3.38,
+    "abw_prognose_min": 2.62,
     "warnung_app": {
-     "erkannt": 0.023,
-     "berechtigt": 0.992
+     "erkannt": 0.024,
+     "berechtigt": 0.991
     },
     "warnung_prognose": {
-     "erkannt": 0.498,
-     "berechtigt": 0.547
+     "erkannt": 0.511,
+     "berechtigt": 0.465
     }
    }
   ]
  },
  "bewertung": {
   "tage": 7,
-  "von": "2026-11-07",
-  "bis": "2026-11-16",
-  "abfahrten": 51753,
-  "abw_app": 3.341,
-  "abw_prognose": 2.47,
-  "bias_app": 3.334,
-  "bias_prognose": 0.035,
-  "treffer2_app": 0.539,
-  "treffer2_prognose": 0.579,
-  "in_spanne": 0.821,
-  "warn_app_erkannt": 0.119,
-  "warn_prognose_erkannt": 0.453,
-  "warn_prognose_berechtigt": 0.683
+  "von": "2026-11-09",
+  "bis": "2026-11-17",
+  "abfahrten": 53668,
+  "abw_app": 3.531,
+  "abw_prognose": 2.541,
+  "bias_app": 3.524,
+  "bias_prognose": -0.013,
+  "treffer2_app": 0.504,
+  "treffer2_prognose": 0.556,
+  "in_spanne": 0.814,
+  "warn_app_erkannt": 0.121,
+  "warn_prognose_erkannt": 0.483,
+  "warn_prognose_berechtigt": 0.703
  },
  "zellen": {
   "start|0|0|*": {
-   "n": 2669,
+   "n": 2908,
    "erwartet": 2.3,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.172
+   "anteil_ab5": 0.167
   },
   "start|0|0|1-3": {
-   "n": 1321,
+   "n": 1452,
    "erwartet": 1.7,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.119
+   "anteil_ab5": 0.114
   },
   "start|0|0|3-6": {
-   "n": 805,
+   "n": 892,
    "erwartet": 3.6,
    "von": 0.0,
    "bis": 6.0,
-   "anteil_ab5": 0.293
+   "anteil_ab5": 0.285
   },
   "start|0|0|<1": {
-   "n": 412,
+   "n": 430,
    "erwartet": 1.1,
    "von": 0.0,
    "bis": 1.0,
-   "anteil_ab5": 0.058
+   "anteil_ab5": 0.056
   },
   "start|0|0|>6": {
-   "n": 120,
+   "n": 122,
    "erwartet": 4.0,
    "von": 0.0,
    "bis": 8.0,
-   "anteil_ab5": 0.358
+   "anteil_ab5": 0.361
   },
   "start|5|0|*": {
-   "n": 2669,
+   "n": 2908,
    "erwartet": 2.3,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.172
+   "anteil_ab5": 0.167
   },
   "start|5|0|1-3": {
-   "n": 1322,
+   "n": 1453,
    "erwartet": 1.7,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.119
+   "anteil_ab5": 0.112
   },
   "start|5|0|3-6": {
-   "n": 797,
-   "erwartet": 3.7,
+   "n": 880,
+   "erwartet": 3.6,
    "von": 0.0,
    "bis": 6.0,
-   "anteil_ab5": 0.299
+   "anteil_ab5": 0.294
   },
   "start|5|0|<1": {
-   "n": 412,
+   "n": 431,
    "erwartet": 1.1,
    "von": 0.0,
    "bis": 1.0,
-   "anteil_ab5": 0.051
+   "anteil_ab5": 0.049
   },
   "start|5|0|>6": {
-   "n": 124,
-   "erwartet": 3.9,
+   "n": 129,
+   "erwartet": 3.8,
    "von": 0.0,
    "bis": 8.0,
-   "anteil_ab5": 0.355
+   "anteil_ab5": 0.341
   },
   "start|10|0|*": {
-   "n": 2669,
+   "n": 2908,
    "erwartet": 2.3,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.172
+   "anteil_ab5": 0.167
   },
   "start|10|0|1-3": {
-   "n": 1335,
-   "erwartet": 1.8,
+   "n": 1466,
+   "erwartet": 1.7,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.119
+   "anteil_ab5": 0.113
   },
   "start|10|0|3-6": {
-   "n": 776,
-   "erwartet": 3.8,
+   "n": 862,
+   "erwartet": 3.7,
    "von": 0.0,
    "bis": 7.0,
-   "anteil_ab5": 0.311
+   "anteil_ab5": 0.304
   },
   "start|10|0|<1": {
-   "n": 421,
+   "n": 439,
    "erwartet": 1.0,
    "von": 0.0,
    "bis": 1.0,
-   "anteil_ab5": 0.052
+   "anteil_ab5": 0.05
   },
   "start|10|0|>6": {
-   "n": 113,
+   "n": 115,
    "erwartet": 3.7,
    "von": 0.0,
-   "bis": 7.6,
-   "anteil_ab5": 0.336
+   "bis": 7.2,
+   "anteil_ab5": 0.33
   },
   "start|15|0|*": {
-   "n": 2669,
+   "n": 2908,
    "erwartet": 2.3,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.172
+   "anteil_ab5": 0.167
   },
   "start|15|0|1-3": {
-   "n": 1345,
+   "n": 1475,
    "erwartet": 1.8,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.122
+   "anteil_ab5": 0.115
   },
   "start|15|0|3-6": {
-   "n": 761,
-   "erwartet": 3.8,
+   "n": 843,
+   "erwartet": 3.7,
+   "von": 0.0,
+   "bis": 7.0,
+   "anteil_ab5": 0.306
+  },
+  "start|15|0|<1": {
+   "n": 428,
+   "erwartet": 1.0,
+   "von": 0.0,
+   "bis": 1.0,
+   "anteil_ab5": 0.042
+  },
+  "start|15|0|>6": {
+   "n": 126,
+   "erwartet": 3.6,
+   "von": 0.0,
+   "bis": 7.0,
+   "anteil_ab5": 0.325
+  },
+  "start|20|0|*": {
+   "n": 2908,
+   "erwartet": 2.3,
+   "von": 0.0,
+   "bis": 4.0,
+   "anteil_ab5": 0.167
+  },
+  "start|20|0|1-3": {
+   "n": 1484,
+   "erwartet": 1.8,
+   "von": 0.0,
+   "bis": 3.0,
+   "anteil_ab5": 0.113
+  },
+  "start|20|0|3-6": {
+   "n": 817,
+   "erwartet": 3.7,
    "von": 0.0,
    "bis": 7.0,
    "anteil_ab5": 0.313
   },
-  "start|15|0|<1": {
-   "n": 409,
-   "erwartet": 1.0,
-   "von": 0.0,
-   "bis": 1.0,
-   "anteil_ab5": 0.044
-  },
-  "start|15|0|>6": {
-   "n": 121,
-   "erwartet": 3.6,
-   "von": 0.0,
-   "bis": 7.0,
-   "anteil_ab5": 0.331
-  },
-  "start|20|0|*": {
-   "n": 2669,
-   "erwartet": 2.3,
-   "von": 0.0,
-   "bis": 4.0,
-   "anteil_ab5": 0.172
-  },
-  "start|20|0|1-3": {
-   "n": 1351,
-   "erwartet": 1.8,
-   "von": 0.0,
-   "bis": 3.0,
-   "anteil_ab5": 0.12
-  },
-  "start|20|0|3-6": {
-   "n": 734,
-   "erwartet": 3.8,
-   "von": 0.0,
-   "bis": 7.0,
-   "anteil_ab5": 0.322
-  },
   "start|20|0|<1": {
-   "n": 435,
+   "n": 453,
    "erwartet": 1.0,
    "von": 0.0,
    "bis": 1.0,
-   "anteil_ab5": 0.048
+   "anteil_ab5": 0.046
   },
   "start|20|0|>6": {
-   "n": 116,
-   "erwartet": 3.8,
+   "n": 118,
+   "erwartet": 3.9,
    "von": 0.0,
    "bis": 8.0,
-   "anteil_ab5": 0.353
+   "anteil_ab5": 0.356
   },
   "start|30|0|*": {
-   "n": 2669,
+   "n": 2908,
    "erwartet": 2.3,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.172
+   "anteil_ab5": 0.167
   },
   "start|30|0|1-3": {
-   "n": 1337,
+   "n": 1467,
    "erwartet": 1.9,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.124
+   "anteil_ab5": 0.118
   },
   "start|30|0|3-6": {
-   "n": 725,
-   "erwartet": 3.7,
+   "n": 810,
+   "erwartet": 3.6,
    "von": 0.0,
    "bis": 7.0,
-   "anteil_ab5": 0.317
+   "anteil_ab5": 0.306
   },
   "start|30|0|<1": {
-   "n": 458,
+   "n": 476,
    "erwartet": 1.1,
    "von": 0.0,
    "bis": 1.0,
-   "anteil_ab5": 0.066
+   "anteil_ab5": 0.063
   },
   "start|30|0|>6": {
-   "n": 103,
+   "n": 105,
    "erwartet": 3.8,
    "von": 0.0,
    "bis": 7.0,
-   "anteil_ab5": 0.33
+   "anteil_ab5": 0.343
   },
   "unterwegs|0|0|*": {
-   "n": 49759,
-   "erwartet": 2.5,
+   "n": 53953,
+   "erwartet": 2.4,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.16
+   "anteil_ab5": 0.155
   },
   "unterwegs|0|0|1-3": {
-   "n": 26019,
+   "n": 28457,
    "erwartet": 2.1,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.131
+   "anteil_ab5": 0.125
   },
   "unterwegs|0|0|3-6": {
-   "n": 10317,
-   "erwartet": 4.2,
+   "n": 11438,
+   "erwartet": 4.1,
    "von": 0.0,
-   "bis": 7.0,
-   "anteil_ab5": 0.316
+   "bis": 6.0,
+   "anteil_ab5": 0.303
   },
   "unterwegs|0|0|<1": {
-   "n": 11959,
+   "n": 12548,
    "erwartet": 1.2,
    "von": 0.0,
    "bis": 2.0,
-   "anteil_ab5": 0.056
+   "anteil_ab5": 0.055
   },
   "unterwegs|0|0|>6": {
-   "n": 1427,
-   "erwartet": 6.7,
+   "n": 1469,
+   "erwartet": 6.6,
    "von": 0.0,
    "bis": 12.0,
-   "anteil_ab5": 0.443
+   "anteil_ab5": 0.438
   },
   "unterwegs|0|1-2|1-3": {
-   "n": 8715,
-   "erwartet": 3.8,
+   "n": 9715,
+   "erwartet": 3.7,
    "von": 2.0,
    "bis": 5.0,
-   "anteil_ab5": 0.27
+   "anteil_ab5": 0.262
   },
   "unterwegs|0|1-2|3-6": {
-   "n": 4986,
+   "n": 5655,
    "erwartet": 4.8,
    "von": 2.0,
    "bis": 6.0,
    "anteil_ab5": 0.429
   },
   "unterwegs|0|1-2|<1": {
-   "n": 1076,
+   "n": 1119,
    "erwartet": 2.7,
    "von": 1.0,
    "bis": 4.0,
-   "anteil_ab5": 0.109
+   "anteil_ab5": 0.105
   },
   "unterwegs|0|1-2|>6": {
-   "n": 387,
-   "erwartet": 5.3,
+   "n": 429,
+   "erwartet": 5.2,
    "von": 3.0,
-   "bis": 8.0,
-   "anteil_ab5": 0.468
+   "bis": 7.0,
+   "anteil_ab5": 0.455
   },
   "unterwegs|0|3-4|1-3": {
-   "n": 4330,
+   "n": 4662,
    "erwartet": 5.8,
    "von": 4.0,
    "bis": 7.0,
-   "anteil_ab5": 0.717
+   "anteil_ab5": 0.714
   },
   "unterwegs|0|3-4|3-6": {
-   "n": 4915,
+   "n": 5445,
    "erwartet": 6.6,
    "von": 4.0,
    "bis": 8.0,
-   "anteil_ab5": 0.779
+   "anteil_ab5": 0.785
   },
   "unterwegs|0|3-4|<1": {
-   "n": 115,
+   "n": 116,
    "erwartet": 4.9,
    "von": 3.0,
    "bis": 6.0,
-   "anteil_ab5": 0.513
+   "anteil_ab5": 0.509
   },
   "unterwegs|0|3-4|>6": {
-   "n": 472,
+   "n": 503,
    "erwartet": 7.4,
    "von": 5.0,
    "bis": 10.0,
-   "anteil_ab5": 0.833
+   "anteil_ab5": 0.839
   },
   "unterwegs|0|5-7|1-3": {
-   "n": 1280,
+   "n": 1438,
    "erwartet": 8.5,
    "von": 6.0,
    "bis": 10.0,
-   "anteil_ab5": 0.995
+   "anteil_ab5": 0.996
   },
   "unterwegs|0|5-7|3-6": {
-   "n": 3598,
-   "erwartet": 9.0,
+   "n": 4112,
+   "erwartet": 9.1,
    "von": 7.0,
    "bis": 11.0,
    "anteil_ab5": 0.994
   },
   "unterwegs|0|5-7|<1": {
-   "n": 12,
+   "n": 13,
    "erwartet": 7.4,
-   "von": 6.2,
+   "von": 6.4,
    "bis": 7.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|0|5-7|>6": {
-   "n": 745,
+   "n": 803,
    "erwartet": 9.9,
    "von": 7.0,
    "bis": 12.0,
    "anteil_ab5": 0.995
   },
   "unterwegs|0|>7|1-3": {
-   "n": 234,
-   "erwartet": 11.4,
+   "n": 246,
+   "erwartet": 11.3,
    "von": 10.0,
    "bis": 13.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|0|>7|3-6": {
-   "n": 1944,
-   "erwartet": 14.4,
+   "n": 2141,
+   "erwartet": 14.2,
    "von": 10.0,
-   "bis": 17.0,
+   "bis": 16.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|0|>7|<1": {
@@ -487,143 +487,143 @@
    "anteil_ab5": 1.0
   },
   "unterwegs|0|>7|>6": {
-   "n": 1707,
-   "erwartet": 17.3,
-   "von": 11.0,
+   "n": 1747,
+   "erwartet": 17.2,
+   "von": 12.0,
    "bis": 21.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|5|0|*": {
-   "n": 59154,
+   "n": 64488,
    "erwartet": 2.8,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.199
+   "anteil_ab5": 0.195
   },
   "unterwegs|5|0|1-3": {
-   "n": 30963,
+   "n": 33982,
    "erwartet": 2.4,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.164
+   "anteil_ab5": 0.158
   },
   "unterwegs|5|0|3-6": {
-   "n": 13574,
-   "erwartet": 4.5,
+   "n": 15197,
+   "erwartet": 4.4,
    "von": 0.0,
    "bis": 7.0,
-   "anteil_ab5": 0.362
+   "anteil_ab5": 0.354
   },
   "unterwegs|5|0|<1": {
-   "n": 12671,
+   "n": 13288,
    "erwartet": 1.4,
    "von": 0.0,
    "bis": 2.0,
-   "anteil_ab5": 0.069
+   "anteil_ab5": 0.067
   },
   "unterwegs|5|0|>6": {
-   "n": 1863,
-   "erwartet": 6.9,
+   "n": 1930,
+   "erwartet": 6.8,
    "von": 0.0,
-   "bis": 12.0,
-   "anteil_ab5": 0.486
+   "bis": 11.0,
+   "anteil_ab5": 0.48
   },
   "unterwegs|5|1-2|1-3": {
-   "n": 5997,
-   "erwartet": 4.6,
+   "n": 6614,
+   "erwartet": 4.5,
    "von": 3.0,
    "bis": 6.0,
-   "anteil_ab5": 0.415
+   "anteil_ab5": 0.41
   },
   "unterwegs|5|1-2|3-6": {
-   "n": 4303,
+   "n": 4818,
    "erwartet": 5.6,
    "von": 3.0,
    "bis": 7.0,
-   "anteil_ab5": 0.567
+   "anteil_ab5": 0.572
   },
   "unterwegs|5|1-2|<1": {
-   "n": 530,
-   "erwartet": 3.5,
+   "n": 548,
+   "erwartet": 3.4,
    "von": 2.0,
-   "bis": 4.2,
-   "anteil_ab5": 0.2
+   "bis": 4.0,
+   "anteil_ab5": 0.193
   },
   "unterwegs|5|1-2|>6": {
-   "n": 385,
+   "n": 424,
    "erwartet": 5.9,
    "von": 3.0,
    "bis": 9.0,
-   "anteil_ab5": 0.582
+   "anteil_ab5": 0.568
   },
   "unterwegs|5|3-4|1-3": {
-   "n": 2898,
+   "n": 3117,
    "erwartet": 6.3,
    "von": 4.0,
    "bis": 8.0,
-   "anteil_ab5": 0.793
+   "anteil_ab5": 0.794
   },
   "unterwegs|5|3-4|3-6": {
-   "n": 3755,
+   "n": 4152,
    "erwartet": 7.3,
    "von": 5.0,
    "bis": 9.0,
-   "anteil_ab5": 0.843
+   "anteil_ab5": 0.845
   },
   "unterwegs|5|3-4|<1": {
-   "n": 51,
+   "n": 52,
    "erwartet": 5.8,
    "von": 4.0,
    "bis": 7.0,
-   "anteil_ab5": 0.745
+   "anteil_ab5": 0.75
   },
   "unterwegs|5|3-4|>6": {
-   "n": 501,
-   "erwartet": 8.2,
+   "n": 540,
+   "erwartet": 8.3,
    "von": 5.0,
-   "bis": 10.0,
-   "anteil_ab5": 0.89
+   "bis": 11.0,
+   "anteil_ab5": 0.898
   },
   "unterwegs|5|5-7|1-3": {
-   "n": 727,
-   "erwartet": 9.3,
+   "n": 818,
+   "erwartet": 9.2,
    "von": 6.0,
-   "bis": 11.0,
-   "anteil_ab5": 0.993
+   "bis": 10.0,
+   "anteil_ab5": 0.994
   },
   "unterwegs|5|5-7|3-6": {
-   "n": 2508,
+   "n": 2856,
    "erwartet": 9.8,
    "von": 7.0,
    "bis": 12.0,
-   "anteil_ab5": 0.992
+   "anteil_ab5": 0.993
   },
   "unterwegs|5|5-7|<1": {
-   "n": 9,
-   "erwartet": 7.1,
+   "n": 10,
+   "erwartet": 7.2,
    "von": 6.0,
-   "bis": 7.0,
+   "bis": 7.2,
    "anteil_ab5": 1.0
   },
   "unterwegs|5|5-7|>6": {
-   "n": 655,
+   "n": 693,
    "erwartet": 10.9,
    "von": 8.0,
    "bis": 14.0,
    "anteil_ab5": 0.994
   },
   "unterwegs|5|>7|1-3": {
-   "n": 156,
-   "erwartet": 11.8,
+   "n": 163,
+   "erwartet": 11.7,
    "von": 10.0,
    "bis": 14.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|5|>7|3-6": {
-   "n": 1355,
-   "erwartet": 15.4,
+   "n": 1484,
+   "erwartet": 15.1,
    "von": 11.0,
-   "bis": 18.0,
+   "bis": 17.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|5|>7|<1": {
@@ -634,141 +634,141 @@
    "anteil_ab5": 1.0
   },
   "unterwegs|5|>7|>6": {
-   "n": 1294,
-   "erwartet": 17.4,
+   "n": 1323,
+   "erwartet": 17.3,
    "von": 11.0,
    "bis": 21.0,
    "anteil_ab5": 0.999
   },
   "unterwegs|10|0|*": {
-   "n": 66143,
-   "erwartet": 3.2,
+   "n": 72243,
+   "erwartet": 3.1,
    "von": 0.0,
    "bis": 5.0,
-   "anteil_ab5": 0.238
+   "anteil_ab5": 0.235
   },
   "unterwegs|10|0|1-3": {
-   "n": 34223,
+   "n": 37598,
    "erwartet": 2.7,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.198
+   "anteil_ab5": 0.193
   },
   "unterwegs|10|0|3-6": {
-   "n": 16288,
-   "erwartet": 4.9,
+   "n": 18276,
+   "erwartet": 4.7,
    "von": 1.0,
-   "bis": 8.0,
-   "anteil_ab5": 0.405
+   "bis": 7.0,
+   "anteil_ab5": 0.398
   },
   "unterwegs|10|0|<1": {
-   "n": 13207,
+   "n": 13821,
    "erwartet": 1.6,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.086
+   "anteil_ab5": 0.084
   },
   "unterwegs|10|0|>6": {
-   "n": 2277,
-   "erwartet": 7.1,
+   "n": 2387,
+   "erwartet": 7.0,
    "von": 0.0,
    "bis": 12.0,
-   "anteil_ab5": 0.529
+   "anteil_ab5": 0.524
   },
   "unterwegs|10|1-2|1-3": {
-   "n": 4231,
-   "erwartet": 5.2,
+   "n": 4632,
+   "erwartet": 5.1,
    "von": 3.0,
    "bis": 7.0,
-   "anteil_ab5": 0.532
+   "anteil_ab5": 0.531
   },
   "unterwegs|10|1-2|3-6": {
-   "n": 3560,
+   "n": 3918,
    "erwartet": 6.2,
    "von": 3.0,
    "bis": 8.0,
-   "anteil_ab5": 0.644
+   "anteil_ab5": 0.645
   },
   "unterwegs|10|1-2|<1": {
-   "n": 261,
+   "n": 272,
    "erwartet": 3.8,
    "von": 2.0,
    "bis": 5.0,
-   "anteil_ab5": 0.264
+   "anteil_ab5": 0.254
   },
   "unterwegs|10|1-2|>6": {
-   "n": 377,
+   "n": 398,
    "erwartet": 6.8,
    "von": 4.0,
    "bis": 10.0,
-   "anteil_ab5": 0.66
+   "anteil_ab5": 0.661
   },
   "unterwegs|10|3-4|1-3": {
-   "n": 1801,
+   "n": 1951,
    "erwartet": 6.8,
    "von": 5.0,
    "bis": 9.0,
-   "anteil_ab5": 0.853
+   "anteil_ab5": 0.854
   },
   "unterwegs|10|3-4|3-6": {
-   "n": 2862,
-   "erwartet": 8.0,
+   "n": 3199,
+   "erwartet": 7.9,
    "von": 5.0,
    "bis": 10.0,
-   "anteil_ab5": 0.885
+   "anteil_ab5": 0.884
   },
   "unterwegs|10|3-4|<1": {
-   "n": 31,
-   "erwartet": 6.5,
+   "n": 33,
+   "erwartet": 6.6,
    "von": 5.0,
-   "bis": 7.0,
-   "anteil_ab5": 0.839
+   "bis": 8.0,
+   "anteil_ab5": 0.848
   },
   "unterwegs|10|3-4|>6": {
-   "n": 419,
-   "erwartet": 8.8,
-   "von": 5.0,
+   "n": 459,
+   "erwartet": 8.9,
+   "von": 6.0,
    "bis": 12.0,
-   "anteil_ab5": 0.905
+   "anteil_ab5": 0.913
   },
   "unterwegs|10|5-7|1-3": {
-   "n": 425,
-   "erwartet": 10.1,
+   "n": 480,
+   "erwartet": 9.9,
    "von": 7.0,
    "bis": 12.0,
-   "anteil_ab5": 0.995
+   "anteil_ab5": 0.996
   },
   "unterwegs|10|5-7|3-6": {
-   "n": 1691,
+   "n": 1932,
    "erwartet": 10.5,
-   "von": 7.0,
+   "von": 8.0,
    "bis": 13.0,
-   "anteil_ab5": 0.992
+   "anteil_ab5": 0.993
   },
   "unterwegs|10|5-7|<1": {
-   "n": 9,
-   "erwartet": 8.2,
+   "n": 10,
+   "erwartet": 8.4,
    "von": 6.0,
-   "bis": 10.4,
+   "bis": 10.2,
    "anteil_ab5": 1.0
   },
   "unterwegs|10|5-7|>6": {
-   "n": 579,
+   "n": 600,
    "erwartet": 12.0,
    "von": 8.0,
    "bis": 15.0,
    "anteil_ab5": 0.988
   },
   "unterwegs|10|>7|1-3": {
-   "n": 88,
+   "n": 89,
    "erwartet": 12.5,
    "von": 10.0,
    "bis": 15.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|10|>7|3-6": {
-   "n": 892,
-   "erwartet": 16.8,
+   "n": 953,
+   "erwartet": 16.5,
    "von": 11.0,
    "bis": 19.0,
    "anteil_ab5": 1.0
@@ -781,113 +781,113 @@
    "anteil_ab5": 1.0
   },
   "unterwegs|10|>7|>6": {
-   "n": 913,
-   "erwartet": 17.2,
+   "n": 935,
+   "erwartet": 17.1,
    "von": 12.0,
    "bis": 21.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|15|0|*": {
-   "n": 71476,
-   "erwartet": 3.5,
+   "n": 78096,
+   "erwartet": 3.4,
    "von": 0.0,
    "bis": 6.0,
-   "anteil_ab5": 0.27
+   "anteil_ab5": 0.267
   },
   "unterwegs|15|0|1-3": {
-   "n": 36645,
+   "n": 40269,
    "erwartet": 3.0,
    "von": 0.0,
    "bis": 5.0,
-   "anteil_ab5": 0.229
+   "anteil_ab5": 0.225
   },
   "unterwegs|15|0|3-6": {
-   "n": 18436,
-   "erwartet": 5.1,
+   "n": 20666,
+   "erwartet": 5.0,
    "von": 1.0,
    "bis": 8.0,
-   "anteil_ab5": 0.437
+   "anteil_ab5": 0.43
   },
   "unterwegs|15|0|<1": {
-   "n": 13480,
+   "n": 14100,
    "erwartet": 1.7,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.101
+   "anteil_ab5": 0.099
   },
   "unterwegs|15|0|>6": {
-   "n": 2698,
-   "erwartet": 7.1,
-   "von": 0.0,
-   "bis": 12.0,
-   "anteil_ab5": 0.549
+   "n": 2825,
+   "erwartet": 6.9,
+   "von": 1.0,
+   "bis": 11.0,
+   "anteil_ab5": 0.544
   },
   "unterwegs|15|1-2|1-3": {
-   "n": 2926,
-   "erwartet": 5.7,
+   "n": 3177,
+   "erwartet": 5.6,
    "von": 3.0,
    "bis": 7.0,
-   "anteil_ab5": 0.625
+   "anteil_ab5": 0.622
   },
   "unterwegs|15|1-2|3-6": {
-   "n": 2899,
+   "n": 3192,
    "erwartet": 6.9,
    "von": 4.0,
    "bis": 9.0,
-   "anteil_ab5": 0.717
+   "anteil_ab5": 0.718
   },
   "unterwegs|15|1-2|<1": {
-   "n": 150,
-   "erwartet": 4.2,
+   "n": 153,
+   "erwartet": 4.1,
    "von": 1.0,
-   "bis": 6.2,
-   "anteil_ab5": 0.347
+   "bis": 6.0,
+   "anteil_ab5": 0.34
   },
   "unterwegs|15|1-2|>6": {
-   "n": 312,
-   "erwartet": 7.6,
+   "n": 340,
+   "erwartet": 7.7,
    "von": 4.0,
    "bis": 11.0,
-   "anteil_ab5": 0.734
+   "anteil_ab5": 0.747
   },
   "unterwegs|15|3-4|1-3": {
-   "n": 982,
+   "n": 1067,
    "erwartet": 7.3,
    "von": 5.0,
    "bis": 9.0,
-   "anteil_ab5": 0.873
+   "anteil_ab5": 0.878
   },
   "unterwegs|15|3-4|3-6": {
-   "n": 2010,
+   "n": 2293,
    "erwartet": 8.3,
    "von": 5.0,
    "bis": 11.0,
    "anteil_ab5": 0.904
   },
   "unterwegs|15|3-4|<1": {
-   "n": 16,
-   "erwartet": 6.7,
+   "n": 18,
+   "erwartet": 6.9,
    "von": 5.0,
-   "bis": 8.0,
-   "anteil_ab5": 0.938
+   "bis": 9.0,
+   "anteil_ab5": 0.944
   },
   "unterwegs|15|3-4|>6": {
-   "n": 324,
+   "n": 347,
    "erwartet": 9.1,
    "von": 5.0,
-   "bis": 12.4,
-   "anteil_ab5": 0.898
+   "bis": 12.0,
+   "anteil_ab5": 0.893
   },
   "unterwegs|15|5-7|1-3": {
-   "n": 245,
-   "erwartet": 10.5,
-   "von": 7.0,
-   "bis": 13.0,
+   "n": 279,
+   "erwartet": 10.4,
+   "von": 8.0,
+   "bis": 12.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|15|5-7|3-6": {
-   "n": 1157,
-   "erwartet": 11.7,
+   "n": 1297,
+   "erwartet": 11.6,
    "von": 8.0,
    "bis": 14.0,
    "anteil_ab5": 0.996
@@ -900,7 +900,7 @@
    "anteil_ab5": 1.0
   },
   "unterwegs|15|5-7|>6": {
-   "n": 561,
+   "n": 574,
    "erwartet": 12.5,
    "von": 9.0,
    "bis": 15.0,
@@ -914,123 +914,123 @@
    "anteil_ab5": 1.0
   },
   "unterwegs|15|>7|3-6": {
-   "n": 575,
-   "erwartet": 17.3,
+   "n": 605,
+   "erwartet": 17.1,
    "von": 11.0,
    "bis": 20.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|15|>7|>6": {
-   "n": 597,
-   "erwartet": 17.6,
+   "n": 614,
+   "erwartet": 17.5,
    "von": 12.0,
    "bis": 21.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|20|0|*": {
-   "n": 75422,
-   "erwartet": 3.7,
+   "n": 82396,
+   "erwartet": 3.6,
    "von": 0.0,
    "bis": 6.0,
-   "anteil_ab5": 0.295
+   "anteil_ab5": 0.293
   },
   "unterwegs|20|0|1-3": {
-   "n": 38229,
-   "erwartet": 3.2,
+   "n": 42002,
+   "erwartet": 3.1,
    "von": 0.0,
    "bis": 5.0,
-   "anteil_ab5": 0.255
+   "anteil_ab5": 0.25
   },
   "unterwegs|20|0|3-6": {
-   "n": 20104,
-   "erwartet": 5.4,
+   "n": 22501,
+   "erwartet": 5.2,
    "von": 1.0,
    "bis": 8.0,
-   "anteil_ab5": 0.459
+   "anteil_ab5": 0.452
   },
   "unterwegs|20|0|<1": {
-   "n": 13735,
+   "n": 14361,
    "erwartet": 1.9,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.117
+   "anteil_ab5": 0.116
   },
   "unterwegs|20|0|>6": {
-   "n": 3030,
-   "erwartet": 7.0,
+   "n": 3179,
+   "erwartet": 6.9,
    "von": 1.0,
    "bis": 11.0,
-   "anteil_ab5": 0.55
+   "anteil_ab5": 0.546
   },
   "unterwegs|20|1-2|1-3": {
-   "n": 1929,
+   "n": 2092,
    "erwartet": 5.9,
    "von": 4.0,
    "bis": 8.0,
-   "anteil_ab5": 0.664
+   "anteil_ab5": 0.663
   },
   "unterwegs|20|1-2|3-6": {
-   "n": 2270,
+   "n": 2507,
    "erwartet": 7.3,
    "von": 4.0,
    "bis": 10.0,
-   "anteil_ab5": 0.777
+   "anteil_ab5": 0.774
   },
   "unterwegs|20|1-2|<1": {
-   "n": 112,
+   "n": 114,
    "erwartet": 3.8,
    "von": 1.0,
    "bis": 6.0,
-   "anteil_ab5": 0.295
+   "anteil_ab5": 0.289
   },
   "unterwegs|20|1-2|>6": {
-   "n": 276,
-   "erwartet": 8.4,
+   "n": 294,
+   "erwartet": 8.5,
    "von": 5.0,
    "bis": 13.0,
-   "anteil_ab5": 0.815
+   "anteil_ab5": 0.823
   },
   "unterwegs|20|3-4|1-3": {
-   "n": 517,
+   "n": 575,
    "erwartet": 8.1,
    "von": 5.0,
    "bis": 10.0,
-   "anteil_ab5": 0.919
+   "anteil_ab5": 0.917
   },
   "unterwegs|20|3-4|3-6": {
-   "n": 1331,
+   "n": 1549,
    "erwartet": 8.8,
    "von": 6.0,
    "bis": 11.0,
-   "anteil_ab5": 0.903
+   "anteil_ab5": 0.906
   },
   "unterwegs|20|3-4|<1": {
-   "n": 10,
-   "erwartet": 6.0,
+   "n": 11,
+   "erwartet": 6.3,
    "von": 5.0,
-   "bis": 6.4,
+   "bis": 8.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|20|3-4|>6": {
-   "n": 267,
+   "n": 283,
    "erwartet": 10.6,
    "von": 6.0,
    "bis": 14.0,
-   "anteil_ab5": 0.921
+   "anteil_ab5": 0.919
   },
   "unterwegs|20|5-7|1-3": {
-   "n": 159,
-   "erwartet": 11.3,
+   "n": 180,
+   "erwartet": 11.2,
    "von": 9.0,
    "bis": 14.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|20|5-7|3-6": {
-   "n": 767,
-   "erwartet": 13.1,
+   "n": 844,
+   "erwartet": 13.0,
    "von": 9.0,
    "bis": 15.0,
-   "anteil_ab5": 0.993
+   "anteil_ab5": 0.994
   },
   "unterwegs|20|5-7|<1": {
    "n": 2,
@@ -1040,10 +1040,10 @@
    "anteil_ab5": 1.0
   },
   "unterwegs|20|5-7|>6": {
-   "n": 466,
+   "n": 478,
    "erwartet": 12.6,
    "von": 9.0,
-   "bis": 16.0,
+   "bis": 15.6,
    "anteil_ab5": 0.998
   },
   "unterwegs|20|>7|1-3": {
@@ -1054,8 +1054,8 @@
    "anteil_ab5": 1.0
   },
   "unterwegs|20|>7|3-6": {
-   "n": 371,
-   "erwartet": 17.7,
+   "n": 388,
+   "erwartet": 17.5,
    "von": 12.0,
    "bis": 21.0,
    "anteil_ab5": 1.0
@@ -1068,88 +1068,88 @@
    "anteil_ab5": 1.0
   },
   "unterwegs|20|>7|>6": {
-   "n": 362,
+   "n": 370,
    "erwartet": 18.0,
    "von": 12.0,
    "bis": 21.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|30|0|*": {
-   "n": 80811,
-   "erwartet": 4.0,
+   "n": 88282,
+   "erwartet": 3.9,
    "von": 0.0,
    "bis": 6.0,
-   "anteil_ab5": 0.329
+   "anteil_ab5": 0.327
   },
   "unterwegs|30|0|1-3": {
-   "n": 40083,
+   "n": 44051,
    "erwartet": 3.4,
    "von": 0.0,
    "bis": 6.0,
-   "anteil_ab5": 0.287
+   "anteil_ab5": 0.283
   },
   "unterwegs|30|0|3-6": {
-   "n": 22421,
-   "erwartet": 5.7,
+   "n": 25096,
+   "erwartet": 5.6,
    "von": 1.0,
    "bis": 9.0,
-   "anteil_ab5": 0.489
+   "anteil_ab5": 0.482
   },
   "unterwegs|30|0|<1": {
-   "n": 14145,
+   "n": 14753,
    "erwartet": 2.2,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.151
+   "anteil_ab5": 0.149
   },
   "unterwegs|30|0|>6": {
-   "n": 3611,
-   "erwartet": 6.8,
+   "n": 3781,
+   "erwartet": 6.7,
    "von": 1.0,
    "bis": 11.0,
-   "anteil_ab5": 0.555
+   "anteil_ab5": 0.551
   },
   "unterwegs|30|1-2|1-3": {
-   "n": 651,
+   "n": 714,
    "erwartet": 6.5,
    "von": 4.0,
    "bis": 9.0,
-   "anteil_ab5": 0.705
+   "anteil_ab5": 0.702
   },
   "unterwegs|30|1-2|3-6": {
-   "n": 1036,
-   "erwartet": 8.3,
+   "n": 1184,
+   "erwartet": 8.2,
    "von": 5.0,
    "bis": 11.0,
-   "anteil_ab5": 0.844
+   "anteil_ab5": 0.84
   },
   "unterwegs|30|1-2|<1": {
-   "n": 38,
-   "erwartet": 4.2,
-   "von": 1.4,
-   "bis": 6.0,
-   "anteil_ab5": 0.447
+   "n": 40,
+   "erwartet": 4.4,
+   "von": 1.8,
+   "bis": 7.0,
+   "anteil_ab5": 0.475
   },
   "unterwegs|30|1-2|>6": {
-   "n": 154,
-   "erwartet": 9.6,
-   "von": 5.6,
+   "n": 163,
+   "erwartet": 9.7,
+   "von": 5.4,
    "bis": 14.0,
-   "anteil_ab5": 0.877
+   "anteil_ab5": 0.871
   },
   "unterwegs|30|3-4|1-3": {
-   "n": 141,
-   "erwartet": 10.6,
+   "n": 162,
+   "erwartet": 10.5,
    "von": 7.0,
    "bis": 14.0,
-   "anteil_ab5": 0.965
+   "anteil_ab5": 0.969
   },
   "unterwegs|30|3-4|3-6": {
-   "n": 501,
-   "erwartet": 10.7,
+   "n": 565,
+   "erwartet": 10.6,
    "von": 7.0,
    "bis": 13.0,
-   "anteil_ab5": 0.926
+   "anteil_ab5": 0.927
   },
   "unterwegs|30|3-4|<1": {
    "n": 5,
@@ -1159,31 +1159,31 @@
    "anteil_ab5": 1.0
   },
   "unterwegs|30|3-4|>6": {
-   "n": 165,
-   "erwartet": 11.8,
-   "von": 8.8,
+   "n": 172,
+   "erwartet": 11.7,
+   "von": 8.2,
    "bis": 15.0,
    "anteil_ab5": 0.994
   },
   "unterwegs|30|5-7|1-3": {
-   "n": 35,
-   "erwartet": 13.3,
-   "von": 11.0,
-   "bis": 16.2,
+   "n": 42,
+   "erwartet": 12.8,
+   "von": 10.0,
+   "bis": 16.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|30|5-7|3-6": {
-   "n": 272,
-   "erwartet": 16.8,
+   "n": 289,
+   "erwartet": 16.6,
    "von": 10.0,
    "bis": 17.0,
-   "anteil_ab5": 0.989
+   "anteil_ab5": 0.99
   },
   "unterwegs|30|5-7|>6": {
-   "n": 249,
+   "n": 258,
    "erwartet": 13.3,
-   "von": 9.6,
-   "bis": 17.0,
+   "von": 10.0,
+   "bis": 16.6,
    "anteil_ab5": 1.0
   },
   "unterwegs|30|>7|1-3": {
@@ -1194,606 +1194,606 @@
    "anteil_ab5": 1.0
   },
   "unterwegs|30|>7|3-6": {
-   "n": 115,
+   "n": 118,
    "erwartet": 17.8,
    "von": 13.0,
-   "bis": 21.2,
+   "bis": 21.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|30|>7|>6": {
-   "n": 105,
+   "n": 106,
    "erwartet": 16.3,
    "von": 12.0,
-   "bis": 19.2,
+   "bis": 19.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|0|1-2|*": {
-   "n": 15164,
+   "n": 16918,
    "erwartet": 4.1,
    "von": 2.0,
    "bis": 5.0,
-   "anteil_ab5": 0.316
+   "anteil_ab5": 0.313
   },
   "unterwegs|0|3-4|*": {
-   "n": 9832,
+   "n": 10726,
    "erwartet": 6.3,
    "von": 4.0,
    "bis": 8.0,
-   "anteil_ab5": 0.751
+   "anteil_ab5": 0.753
   },
   "unterwegs|0|5-7|*": {
-   "n": 5635,
+   "n": 6366,
    "erwartet": 9.0,
    "von": 7.0,
    "bis": 11.0,
-   "anteil_ab5": 0.994
+   "anteil_ab5": 0.995
   },
   "unterwegs|0|>7|*": {
-   "n": 3893,
-   "erwartet": 15.5,
+   "n": 4142,
+   "erwartet": 15.3,
    "von": 11.0,
    "bis": 18.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|5|1-2|*": {
-   "n": 11215,
+   "n": 12404,
    "erwartet": 4.9,
    "von": 3.0,
    "bis": 7.0,
    "anteil_ab5": 0.469
   },
   "unterwegs|5|3-4|*": {
-   "n": 7205,
+   "n": 7861,
    "erwartet": 7.0,
    "von": 5.0,
    "bis": 9.0,
-   "anteil_ab5": 0.826
+   "anteil_ab5": 0.828
   },
   "unterwegs|5|5-7|*": {
-   "n": 3899,
-   "erwartet": 9.9,
+   "n": 4377,
+   "erwartet": 9.8,
    "von": 7.0,
    "bis": 12.0,
-   "anteil_ab5": 0.992
+   "anteil_ab5": 0.993
   },
   "unterwegs|5|>7|*": {
-   "n": 2810,
-   "erwartet": 16.1,
+   "n": 2975,
+   "erwartet": 15.9,
    "von": 11.0,
    "bis": 19.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|10|1-2|*": {
-   "n": 8429,
+   "n": 9220,
    "erwartet": 5.6,
    "von": 3.0,
    "bis": 8.0,
    "anteil_ab5": 0.577
   },
   "unterwegs|10|3-4|*": {
-   "n": 5113,
+   "n": 5642,
    "erwartet": 7.6,
    "von": 5.0,
    "bis": 10.0,
-   "anteil_ab5": 0.875
+   "anteil_ab5": 0.876
   },
   "unterwegs|10|5-7|*": {
-   "n": 2704,
+   "n": 3022,
    "erwartet": 10.7,
-   "von": 7.0,
+   "von": 8.0,
    "bis": 13.0,
-   "anteil_ab5": 0.992
+   "anteil_ab5": 0.993
   },
   "unterwegs|10|>7|*": {
-   "n": 1894,
-   "erwartet": 16.8,
+   "n": 1978,
+   "erwartet": 16.6,
    "von": 11.0,
    "bis": 20.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|15|1-2|*": {
-   "n": 6287,
+   "n": 6862,
    "erwartet": 6.3,
    "von": 4.0,
    "bis": 8.0,
-   "anteil_ab5": 0.667
+   "anteil_ab5": 0.666
   },
   "unterwegs|15|3-4|*": {
-   "n": 3332,
+   "n": 3725,
    "erwartet": 8.1,
    "von": 5.0,
    "bis": 10.0,
-   "anteil_ab5": 0.895
+   "anteil_ab5": 0.896
   },
   "unterwegs|15|5-7|*": {
-   "n": 1967,
-   "erwartet": 11.8,
+   "n": 2154,
+   "erwartet": 11.7,
    "von": 8.0,
    "bis": 14.0,
-   "anteil_ab5": 0.995
+   "anteil_ab5": 0.996
   },
   "unterwegs|15|>7|*": {
-   "n": 1221,
-   "erwartet": 17.3,
+   "n": 1268,
+   "erwartet": 17.1,
    "von": 12.0,
-   "bis": 21.0,
+   "bis": 20.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|20|1-2|*": {
-   "n": 4587,
+   "n": 5007,
    "erwartet": 6.7,
    "von": 4.0,
    "bis": 9.0,
-   "anteil_ab5": 0.72
+   "anteil_ab5": 0.719
   },
   "unterwegs|20|3-4|*": {
-   "n": 2125,
+   "n": 2418,
    "erwartet": 8.8,
    "von": 6.0,
    "bis": 11.0,
    "anteil_ab5": 0.91
   },
   "unterwegs|20|5-7|*": {
-   "n": 1394,
-   "erwartet": 12.7,
+   "n": 1504,
+   "erwartet": 12.6,
    "von": 9.0,
    "bis": 15.0,
    "anteil_ab5": 0.996
   },
   "unterwegs|20|>7|*": {
-   "n": 755,
-   "erwartet": 17.7,
+   "n": 780,
+   "erwartet": 17.6,
    "von": 12.0,
    "bis": 21.0,
    "anteil_ab5": 1.0
   },
   "unterwegs|30|1-2|*": {
-   "n": 1879,
+   "n": 2101,
    "erwartet": 7.7,
    "von": 4.0,
-   "bis": 10.4,
-   "anteil_ab5": 0.79
+   "bis": 10.0,
+   "anteil_ab5": 0.789
   },
   "unterwegs|30|3-4|*": {
-   "n": 812,
-   "erwartet": 10.9,
+   "n": 904,
+   "erwartet": 10.8,
    "von": 7.0,
    "bis": 14.0,
-   "anteil_ab5": 0.947
+   "anteil_ab5": 0.948
   },
   "unterwegs|30|5-7|*": {
-   "n": 556,
-   "erwartet": 15.0,
+   "n": 589,
+   "erwartet": 14.9,
    "von": 10.0,
    "bis": 17.0,
    "anteil_ab5": 0.995
   },
   "unterwegs|30|>7|*": {
-   "n": 225,
-   "erwartet": 17.2,
-   "von": 12.8,
+   "n": 229,
+   "erwartet": 17.1,
+   "von": 13.0,
    "bis": 21.0,
    "anteil_ab5": 1.0
   },
   "start|0|*|*": {
-   "n": 2669,
+   "n": 2908,
    "erwartet": 2.3,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.172
+   "anteil_ab5": 0.167
   },
   "start|0|*|1-3": {
-   "n": 1321,
+   "n": 1452,
    "erwartet": 1.7,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.119
+   "anteil_ab5": 0.114
   },
   "start|0|*|3-6": {
-   "n": 805,
+   "n": 892,
    "erwartet": 3.6,
    "von": 0.0,
    "bis": 6.0,
-   "anteil_ab5": 0.293
+   "anteil_ab5": 0.285
   },
   "start|0|*|<1": {
-   "n": 412,
+   "n": 430,
    "erwartet": 1.1,
    "von": 0.0,
    "bis": 1.0,
-   "anteil_ab5": 0.058
+   "anteil_ab5": 0.056
   },
   "start|0|*|>6": {
-   "n": 120,
+   "n": 122,
    "erwartet": 4.0,
    "von": 0.0,
    "bis": 8.0,
-   "anteil_ab5": 0.358
+   "anteil_ab5": 0.361
   },
   "start|5|*|*": {
-   "n": 2669,
+   "n": 2908,
    "erwartet": 2.3,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.172
+   "anteil_ab5": 0.167
   },
   "start|5|*|1-3": {
-   "n": 1322,
+   "n": 1453,
    "erwartet": 1.7,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.119
+   "anteil_ab5": 0.112
   },
   "start|5|*|3-6": {
-   "n": 797,
-   "erwartet": 3.7,
+   "n": 880,
+   "erwartet": 3.6,
    "von": 0.0,
    "bis": 6.0,
-   "anteil_ab5": 0.299
+   "anteil_ab5": 0.294
   },
   "start|5|*|<1": {
-   "n": 412,
+   "n": 431,
    "erwartet": 1.1,
    "von": 0.0,
    "bis": 1.0,
-   "anteil_ab5": 0.051
+   "anteil_ab5": 0.049
   },
   "start|5|*|>6": {
-   "n": 124,
-   "erwartet": 3.9,
+   "n": 129,
+   "erwartet": 3.8,
    "von": 0.0,
    "bis": 8.0,
-   "anteil_ab5": 0.355
+   "anteil_ab5": 0.341
   },
   "start|10|*|*": {
-   "n": 2669,
+   "n": 2908,
    "erwartet": 2.3,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.172
+   "anteil_ab5": 0.167
   },
   "start|10|*|1-3": {
-   "n": 1335,
-   "erwartet": 1.8,
+   "n": 1466,
+   "erwartet": 1.7,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.119
+   "anteil_ab5": 0.113
   },
   "start|10|*|3-6": {
-   "n": 776,
-   "erwartet": 3.8,
+   "n": 862,
+   "erwartet": 3.7,
    "von": 0.0,
    "bis": 7.0,
-   "anteil_ab5": 0.311
+   "anteil_ab5": 0.304
   },
   "start|10|*|<1": {
-   "n": 421,
+   "n": 439,
    "erwartet": 1.0,
    "von": 0.0,
    "bis": 1.0,
-   "anteil_ab5": 0.052
+   "anteil_ab5": 0.05
   },
   "start|10|*|>6": {
-   "n": 113,
+   "n": 115,
    "erwartet": 3.7,
    "von": 0.0,
-   "bis": 7.6,
-   "anteil_ab5": 0.336
+   "bis": 7.2,
+   "anteil_ab5": 0.33
   },
   "start|15|*|*": {
-   "n": 2669,
+   "n": 2908,
    "erwartet": 2.3,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.172
+   "anteil_ab5": 0.167
   },
   "start|15|*|1-3": {
-   "n": 1345,
+   "n": 1475,
    "erwartet": 1.8,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.122
+   "anteil_ab5": 0.115
   },
   "start|15|*|3-6": {
-   "n": 761,
-   "erwartet": 3.8,
+   "n": 843,
+   "erwartet": 3.7,
+   "von": 0.0,
+   "bis": 7.0,
+   "anteil_ab5": 0.306
+  },
+  "start|15|*|<1": {
+   "n": 428,
+   "erwartet": 1.0,
+   "von": 0.0,
+   "bis": 1.0,
+   "anteil_ab5": 0.042
+  },
+  "start|15|*|>6": {
+   "n": 126,
+   "erwartet": 3.6,
+   "von": 0.0,
+   "bis": 7.0,
+   "anteil_ab5": 0.325
+  },
+  "start|20|*|*": {
+   "n": 2908,
+   "erwartet": 2.3,
+   "von": 0.0,
+   "bis": 4.0,
+   "anteil_ab5": 0.167
+  },
+  "start|20|*|1-3": {
+   "n": 1484,
+   "erwartet": 1.8,
+   "von": 0.0,
+   "bis": 3.0,
+   "anteil_ab5": 0.113
+  },
+  "start|20|*|3-6": {
+   "n": 817,
+   "erwartet": 3.7,
    "von": 0.0,
    "bis": 7.0,
    "anteil_ab5": 0.313
   },
-  "start|15|*|<1": {
-   "n": 409,
+  "start|20|*|<1": {
+   "n": 453,
    "erwartet": 1.0,
    "von": 0.0,
    "bis": 1.0,
-   "anteil_ab5": 0.044
+   "anteil_ab5": 0.046
   },
-  "start|15|*|>6": {
-   "n": 121,
+  "start|20|*|>6": {
+   "n": 118,
+   "erwartet": 3.9,
+   "von": 0.0,
+   "bis": 8.0,
+   "anteil_ab5": 0.356
+  },
+  "start|30|*|*": {
+   "n": 2908,
+   "erwartet": 2.3,
+   "von": 0.0,
+   "bis": 4.0,
+   "anteil_ab5": 0.167
+  },
+  "start|30|*|1-3": {
+   "n": 1467,
+   "erwartet": 1.9,
+   "von": 0.0,
+   "bis": 3.0,
+   "anteil_ab5": 0.118
+  },
+  "start|30|*|3-6": {
+   "n": 810,
    "erwartet": 3.6,
    "von": 0.0,
    "bis": 7.0,
-   "anteil_ab5": 0.331
-  },
-  "start|20|*|*": {
-   "n": 2669,
-   "erwartet": 2.3,
-   "von": 0.0,
-   "bis": 4.0,
-   "anteil_ab5": 0.172
-  },
-  "start|20|*|1-3": {
-   "n": 1351,
-   "erwartet": 1.8,
-   "von": 0.0,
-   "bis": 3.0,
-   "anteil_ab5": 0.12
-  },
-  "start|20|*|3-6": {
-   "n": 734,
-   "erwartet": 3.8,
-   "von": 0.0,
-   "bis": 7.0,
-   "anteil_ab5": 0.322
-  },
-  "start|20|*|<1": {
-   "n": 435,
-   "erwartet": 1.0,
-   "von": 0.0,
-   "bis": 1.0,
-   "anteil_ab5": 0.048
-  },
-  "start|20|*|>6": {
-   "n": 116,
-   "erwartet": 3.8,
-   "von": 0.0,
-   "bis": 8.0,
-   "anteil_ab5": 0.353
-  },
-  "start|30|*|*": {
-   "n": 2669,
-   "erwartet": 2.3,
-   "von": 0.0,
-   "bis": 4.0,
-   "anteil_ab5": 0.172
-  },
-  "start|30|*|1-3": {
-   "n": 1337,
-   "erwartet": 1.9,
-   "von": 0.0,
-   "bis": 3.0,
-   "anteil_ab5": 0.124
-  },
-  "start|30|*|3-6": {
-   "n": 725,
-   "erwartet": 3.7,
-   "von": 0.0,
-   "bis": 7.0,
-   "anteil_ab5": 0.317
+   "anteil_ab5": 0.306
   },
   "start|30|*|<1": {
-   "n": 458,
+   "n": 476,
    "erwartet": 1.1,
    "von": 0.0,
    "bis": 1.0,
-   "anteil_ab5": 0.066
+   "anteil_ab5": 0.063
   },
   "start|30|*|>6": {
-   "n": 103,
+   "n": 105,
    "erwartet": 3.8,
    "von": 0.0,
    "bis": 7.0,
-   "anteil_ab5": 0.33
+   "anteil_ab5": 0.343
   },
   "unterwegs|0|*|*": {
-   "n": 84283,
+   "n": 92105,
    "erwartet": 4.2,
    "von": 0.0,
    "bis": 7.0,
-   "anteil_ab5": 0.352
+   "anteil_ab5": 0.35
   },
   "unterwegs|0|*|1-3": {
-   "n": 40578,
+   "n": 44518,
    "erwartet": 3.1,
    "von": 0.0,
    "bis": 5.0,
-   "anteil_ab5": 0.256
+   "anteil_ab5": 0.249
   },
   "unterwegs|0|*|3-6": {
-   "n": 25760,
+   "n": 28791,
    "erwartet": 6.2,
    "von": 2.0,
-   "bis": 10.0,
-   "anteil_ab5": 0.573
+   "bis": 9.0,
+   "anteil_ab5": 0.57
   },
   "unterwegs|0|*|<1": {
-   "n": 13170,
+   "n": 13804,
    "erwartet": 1.3,
    "von": 0.0,
    "bis": 2.0,
-   "anteil_ab5": 0.066
+   "anteil_ab5": 0.064
   },
   "unterwegs|0|*|>6": {
-   "n": 4738,
-   "erwartet": 10.9,
+   "n": 4951,
+   "erwartet": 10.8,
    "von": 4.0,
    "bis": 16.0,
-   "anteil_ab5": 0.771
+   "anteil_ab5": 0.769
   },
   "unterwegs|5|*|*": {
-   "n": 84283,
+   "n": 92105,
    "erwartet": 4.2,
    "von": 0.0,
    "bis": 7.0,
-   "anteil_ab5": 0.352
+   "anteil_ab5": 0.35
   },
   "unterwegs|5|*|1-3": {
-   "n": 40741,
+   "n": 44694,
    "erwartet": 3.2,
    "von": 0.0,
    "bis": 5.0,
-   "anteil_ab5": 0.263
+   "anteil_ab5": 0.258
   },
   "unterwegs|5|*|3-6": {
-   "n": 25495,
-   "erwartet": 6.2,
+   "n": 28507,
+   "erwartet": 6.1,
    "von": 2.0,
-   "bis": 10.0,
-   "anteil_ab5": 0.563
+   "bis": 9.0,
+   "anteil_ab5": 0.56
   },
   "unterwegs|5|*|<1": {
-   "n": 13266,
+   "n": 13903,
    "erwartet": 1.5,
    "von": 0.0,
-   "bis": 3.0,
-   "anteil_ab5": 0.077
+   "bis": 2.0,
+   "anteil_ab5": 0.075
   },
   "unterwegs|5|*|>6": {
-   "n": 4698,
-   "erwartet": 10.4,
+   "n": 4910,
+   "erwartet": 10.3,
    "von": 3.0,
-   "bis": 16.0,
-   "anteil_ab5": 0.749
+   "bis": 15.0,
+   "anteil_ab5": 0.746
   },
   "unterwegs|10|*|*": {
-   "n": 84283,
+   "n": 92105,
    "erwartet": 4.2,
    "von": 0.0,
    "bis": 7.0,
-   "anteil_ab5": 0.352
+   "anteil_ab5": 0.35
   },
   "unterwegs|10|*|1-3": {
-   "n": 40768,
-   "erwartet": 3.3,
+   "n": 44750,
+   "erwartet": 3.2,
    "von": 0.0,
    "bis": 5.0,
-   "anteil_ab5": 0.272
+   "anteil_ab5": 0.267
   },
   "unterwegs|10|*|3-6": {
-   "n": 25293,
-   "erwartet": 6.2,
+   "n": 28278,
+   "erwartet": 6.1,
    "von": 2.0,
    "bis": 10.0,
-   "anteil_ab5": 0.553
+   "anteil_ab5": 0.548
   },
   "unterwegs|10|*|<1": {
-   "n": 13509,
+   "n": 14137,
    "erwartet": 1.6,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.092
+   "anteil_ab5": 0.09
   },
   "unterwegs|10|*|>6": {
-   "n": 4565,
-   "erwartet": 9.9,
+   "n": 4779,
+   "erwartet": 9.8,
    "von": 3.0,
    "bis": 15.0,
-   "anteil_ab5": 0.727
+   "anteil_ab5": 0.724
   },
   "unterwegs|15|*|*": {
-   "n": 84283,
+   "n": 92105,
    "erwartet": 4.2,
    "von": 0.0,
    "bis": 7.0,
-   "anteil_ab5": 0.352
+   "anteil_ab5": 0.35
   },
   "unterwegs|15|*|1-3": {
-   "n": 40847,
+   "n": 44841,
    "erwartet": 3.3,
-   "von": 0.0,
+   "von": 1.0,
    "bis": 5.0,
-   "anteil_ab5": 0.278
+   "anteil_ab5": 0.274
   },
   "unterwegs|15|*|3-6": {
-   "n": 25077,
-   "erwartet": 6.2,
+   "n": 28053,
+   "erwartet": 6.1,
    "von": 1.0,
    "bis": 10.0,
-   "anteil_ab5": 0.545
+   "anteil_ab5": 0.54
   },
   "unterwegs|15|*|<1": {
-   "n": 13650,
+   "n": 14275,
    "erwartet": 1.7,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.105
+   "anteil_ab5": 0.103
   },
   "unterwegs|15|*|>6": {
-   "n": 4492,
-   "erwartet": 9.3,
+   "n": 4700,
+   "erwartet": 9.2,
    "von": 2.0,
    "bis": 15.0,
-   "anteil_ab5": 0.702
+   "anteil_ab5": 0.699
   },
   "unterwegs|20|*|*": {
-   "n": 84283,
+   "n": 92105,
    "erwartet": 4.2,
    "von": 0.0,
    "bis": 7.0,
-   "anteil_ab5": 0.352
+   "anteil_ab5": 0.35
   },
   "unterwegs|20|*|1-3": {
-   "n": 40855,
+   "n": 44870,
    "erwartet": 3.4,
-   "von": 0.0,
-   "bis": 6.0,
-   "anteil_ab5": 0.286
+   "von": 1.0,
+   "bis": 5.0,
+   "anteil_ab5": 0.282
   },
   "unterwegs|20|*|3-6": {
-   "n": 24843,
-   "erwartet": 6.1,
+   "n": 27789,
+   "erwartet": 6.0,
    "von": 1.0,
    "bis": 10.0,
-   "anteil_ab5": 0.537
+   "anteil_ab5": 0.53
   },
   "unterwegs|20|*|<1": {
-   "n": 13860,
+   "n": 14489,
    "erwartet": 1.9,
    "von": 0.0,
    "bis": 3.0,
-   "anteil_ab5": 0.119
+   "anteil_ab5": 0.118
   },
   "unterwegs|20|*|>6": {
-   "n": 4401,
-   "erwartet": 8.8,
+   "n": 4604,
+   "erwartet": 8.7,
    "von": 2.0,
    "bis": 14.0,
-   "anteil_ab5": 0.674
+   "anteil_ab5": 0.67
   },
   "unterwegs|30|*|*": {
-   "n": 84283,
+   "n": 92105,
    "erwartet": 4.2,
    "von": 0.0,
    "bis": 7.0,
-   "anteil_ab5": 0.352
+   "anteil_ab5": 0.35
   },
   "unterwegs|30|*|1-3": {
-   "n": 40915,
+   "n": 44974,
    "erwartet": 3.5,
-   "von": 0.0,
+   "von": 1.0,
    "bis": 6.0,
-   "anteil_ab5": 0.296
+   "anteil_ab5": 0.292
   },
   "unterwegs|30|*|3-6": {
-   "n": 24345,
-   "erwartet": 6.1,
+   "n": 27252,
+   "erwartet": 6.0,
    "von": 1.0,
    "bis": 10.0,
-   "anteil_ab5": 0.521
+   "anteil_ab5": 0.514
   },
   "unterwegs|30|*|<1": {
-   "n": 14188,
+   "n": 14798,
    "erwartet": 2.2,
    "von": 0.0,
    "bis": 4.0,
-   "anteil_ab5": 0.152
+   "anteil_ab5": 0.15
   },
   "unterwegs|30|*|>6": {
-   "n": 4284,
-   "erwartet": 7.7,
+   "n": 4480,
+   "erwartet": 7.6,
    "von": 1.0,
    "bis": 13.0,
-   "anteil_ab5": 0.62
+   "anteil_ab5": 0.616
   }
  }
 }
