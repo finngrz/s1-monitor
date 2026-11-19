@@ -17,8 +17,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Wie beim Gesundheits-Check: verspätete Zeitplan-Läufe überspringen, wenn heute schon gerechnet wurde.
+  schon:
+    runs-on: ubuntu-latest
+    outputs:
+      erledigt: ${{ steps.pruefen.outputs.erledigt }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: ergebnisse/prognose_tabelle.json
+          sparse-checkout-cone-mode: false
+      - id: pruefen
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] && grep -q "\"erzeugt_utc\": \"$(date -u +%F)" ergebnisse/prognose_tabelle.json 2>/dev/null; then
+            echo "erledigt=ja" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Prognose::Tabelle ist von heute."
+          fi
+
   berechnen:
-    if: vars.SAMMLER_AKTIV == 'ja'
+    needs: schon
+    if: vars.SAMMLER_AKTIV == 'ja' && needs.schon.outputs.erledigt != 'ja'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

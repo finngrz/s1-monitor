@@ -82,7 +82,29 @@ jobs:
             exit 1
           fi
 
-      - name: Sammeln (Abschnitte von 28 Minuten, bis zu 5,5 Stunden)
+      - name: Fällige Auswertungen anstoßen
+        # GitHub startet Zeitplan-Läufe teils mit Stunden Verspätung. Der Sammler läuft ohnehin
+        # rund um die Uhr und stößt deshalb Gesundheits-Check, Prognose-Tabelle und Dashboard selbst an.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          heute=$(date -u +%F); stunde=$((10#$(date -u +%H)))
+          letzter() { gh run list --repo "$REPO" --workflow "$1" --limit 20 --json createdAt,conclusion \
+                        -q '[.[] | select(.conclusion != "skipped")][0].createdAt' 2>/dev/null; }
+          if [ "$stunde" -ge 6 ] && [[ "$(letzter gesundheit.yml)" != ${heute}* ]]; then
+            gh workflow run gesundheit.yml --repo "$REPO" --ref main && echo "Gesundheits-Check angestoßen"
+          fi
+          if [ "$stunde" -ge 3 ] && [[ "$(letzter prognose.yml)" != ${heute}* ]]; then
+            gh workflow run prognose.yml --repo "$REPO" --ref main && echo "Prognose-Tabelle angestoßen"
+          fi
+          d=$(letzter dashboard.yml)
+          if [ -z "$d" ] || [ $(( $(date -u +%s) - $(date -u -d "$d" +%s) )) -gt $((6 * 3600)) ]; then
+            gh workflow run dashboard.yml --repo "$REPO" --ref main && echo "Dashboard angestoßen"
+          fi
+
+      - name: Sammeln (Abschnitte von 15 Minuten, bis zu 5,5 Stunden)
         env:
           GTI_USER: ${{ secrets.GTI_USER }}
           GTI_PASS: ${{ secrets.GTI_PASS }}
@@ -104,12 +126,16 @@ jobs:
           status=0
           while [ $((ende - SECONDS)) -gt $((10 * 60)) ]; do
             rest_min=$(( (ende - SECONDS) / 60 ))
-            dauer=$(( rest_min < 28 ? rest_min : 28 ))
+            # kurze Abschnitte: fällt der GitHub-Rechner aus, gehen höchstens 15 Minuten verloren
+            dauer=$(( rest_min < 15 ? rest_min : 15 ))
             set +e
             python sammler/sammler.py --daten daten --dauer-min "$dauer"
             status=$?
             set -e
             speichern
+            frei=$(free -m | awk '/^Mem:/{print $7}')
+            echo "Rechner: ${frei} MB Arbeitsspeicher frei, $(df -h . | awk 'NR==2{print $4}') Platte frei"
+            if [ "${frei:-9999}" -lt 1000 ]; then echo "::warning title=Sammler::Nur noch ${frei} MB Arbeitsspeicher frei"; fi
             if [ "$status" -ne 0 ]; then
               echo "::error title=Sammler::Abschnitt mit Status $status beendet, Lauf wird beendet."
               break

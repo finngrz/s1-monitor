@@ -20,8 +20,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # GitHub startet Zeitplan-Läufe teils Stunden verspätet; der Sammler stößt die Prüfung deshalb zusätzlich
+  # selbst an. Ein Zeitplan-Lauf für einen schon geprüften Tag wird übersprungen (keine doppelte Mail).
+  schon:
+    runs-on: ubuntu-latest
+    outputs:
+      erledigt: ${{ steps.pruefen.outputs.erledigt }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: ergebnisse/datenqualitaet.csv
+          sparse-checkout-cone-mode: false
+      - id: pruefen
+        run: |
+          gestern=$(TZ=Europe/Berlin date -d yesterday +%F)
+          if [ "${{ github.event_name }}" = "schedule" ] && grep -q "^${gestern}," ergebnisse/datenqualitaet.csv 2>/dev/null; then
+            echo "erledigt=ja" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Gesundheits-Check::${gestern} wurde schon geprüft."
+          fi
+
   pruefen:
-    if: vars.SAMMLER_AKTIV == 'ja'
+    needs: schon
+    if: vars.SAMMLER_AKTIV == 'ja' && needs.schon.outputs.erledigt != 'ja'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
