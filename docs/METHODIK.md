@@ -140,6 +140,14 @@ archiviert sind) und 07.–09.11. (Wandsbeker Chaussee–Barmbek, S1 Barmbek–O
 Umstieg in Ohlsdorf). Ausfälle werden in dieser Zeit gegen den Baufahrplan gemessen, so wie ihn die
 Schnittstelle liefert.
 
+**Offener Punkt: Bruch in den DB-Echtzeitdaten ab 05.11.2026 (Analyse 19.11.):** Seit dem Morgen des 05.11.
+(zeitgleich mit dem Beginn des Flatterns) liefert die Schnittstelle für alle DB-Züge (S1, S3, S7, RE, RB)
+deutlich seltener „pünktlich“: S1 werktags 10–15 Uhr Anteil exakt 0 min 62 % (28.10.–04.11.) gegenüber 24 %
+(05.–18.11.), unter 3 min 81 % gegenüber 61 %. Die U-Bahn-Linien der Hochbahn sind unverändert (U3: 93 % bzw.
+98 %). Ob die S-Bahn tatsächlich schlechter fährt oder die Datenquelle/Rundung gewechselt hat, ist offen.
+Werte ab 05.11. gelten bis zur Klärung als vorläufig. Klärung durch eine unabhängige Zweitquelle
+(DB-Schnittstelle „Timetables“) geplant.
+
 **Offener Punkt (05.11.2026):** Datenlücken können mit Störungen zusammenfallen (04.11., 7 Uhr: 22 % ohne
 Wert bei Ø 5,4 min Verspätung und 15 Ausfällen). Läge eine solche Stunde über 25 %, würde die
 Ausschlussregel ausgerechnet eine gestörte Stunde herausnehmen. Seit 03.11. ist keine Stunde betroffen.
